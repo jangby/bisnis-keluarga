@@ -14,12 +14,9 @@ use Carbon\Carbon;
 
 class Create extends Component
 {
-    // ==========================================
-    // PROPERTI FORM
-    // ==========================================
-    public $type = 'expense'; // Default: Pengeluaran
+    public $type = 'expense'; 
     
-    // Input Data Utama
+    // Input Data
     public $amount;
     public $category;
     public $date;
@@ -30,98 +27,69 @@ class Create extends Component
     public $product_line_id;
     public $contact_id;
 
-    // Metode Pembayaran & Hutang
-    public $payment_method = 'cash'; // Pilihan: cash, transfer, debt
-    public $due_date; // Wajib diisi jika payment_method = debt
+    // Pembayaran
+    public $payment_method = 'cash';
+    public $due_date;
 
-    // ==========================================
-    // LIFECYCLE: MOUNT (Saat halaman dimuat)
-    // ==========================================
+    // [BARU] State untuk Modal
+    public $showConfirmationModal = false;
+
     public function mount($type = null)
     {
-        // Set tanggal hari ini
         $this->date = Carbon::now()->format('Y-m-d');
-        
-        // Set default pilihan pertama agar user tidak repot
         $this->wallet_id = Wallet::first()->id ?? null;
         $this->product_line_id = ProductLine::first()->id ?? null;
         
-        // Tangkap parameter dari URL Dashboard (misal: ?type=income)
-        if ($type) {
-            $this->type = $type;
-        }
-        
-        // Set kategori default agar dropdown tidak kosong
+        if ($type) $this->type = $type;
         $this->category = $this->type == 'income' ? 'Pendapatan Jasa' : 'Operasional Umum';
     }
 
-    // ==========================================
-    // COMPUTED PROPERTIES (Logika Dinamis)
-    // ==========================================
-
-    // Daftar Kategori (Disesuaikan agar tidak tumpang tindih dengan Kasir/Produksi)
     public function getCategoriesProperty()
     {
         if ($this->type == 'income') {
             return [
-                'Pendapatan Jasa', 
-                'Komisi/Fee', 
-                'Pendapatan Lain-lain', 
-                'Penerimaan Piutang', 
-                'Suntikan Modal', 
-                'Hibah', 
-                'Pinjaman Bank'
+                'Pendapatan Jasa', 'Penjualan Produk', 'Komisi/Fee', 
+                'Pendapatan Lain-lain', 'Penerimaan Piutang', 
+                'Suntikan Modal', 'Hibah', 'Pinjaman Bank'
             ];
         } else {
             return [
-                'Operasional Umum', // Listrik, Air, Internet
-                'Beban Gaji', 
-                'Beban Sewa/Gedung', 
-                'Biaya Kemasan', 
-                'Beban Ongkos Kirim', 
-                'Beban Iklan/Promosi', 
-                'Perlengkapan Kantor', 
-                'Peralatan/Mesin', 
-                'Investasi', 
-                'Pembayaran Utang', 
-                'Pengeluaran Pribadi (Prive)', 
-                'Sedekah/Sosial', 
-                'Beban Lain-lain'
+                'Operasional Umum', 'Belanja Bahan Baku', 'Beban Gaji', 
+                'Beban Sewa', 'Listrik & Air', 'Internet & Pulsa',
+                'Transportasi', 'Pemasaran/Iklan', 'Perbaikan/Maintenance',
+                'Perlengkapan Kantor', 'Investasi Alat', 'Pembayaran Utang', 
+                'Prive (Tarik Tunai)', 'Sedekah/Sosial', 'Beban Lain-lain'
             ];
         }
     }
 
-    // Helper untuk tampilan (disederhanakan jadi false karena stok dihapus dari sini)
-    public function getNeedsProductInputProperty()
+    // [BARU] Fungsi Validasi sebelum Buka Modal
+    public function confirmSave()
     {
-        return false; 
-    }
-
-    // ==========================================
-    // LOGIKA PENYIMPANAN (SAVE)
-    // ==========================================
-    public function save()
-    {
-        // 1. Validasi Input
         $this->validate([
             'amount' => 'required|numeric|min:1',
             'date' => 'required|date',
             'category' => 'required',
-            'product_line_id' => 'required|exists:product_lines,id',
-            // Jika hutang, wajib isi tanggal jatuh tempo
+            'product_line_id' => 'required',
             'due_date' => $this->payment_method == 'debt' ? 'required|date' : 'nullable',
-            // Jika bukan hutang, wajib pilih dompet sumber dana
-            'wallet_id' => $this->payment_method != 'debt' ? 'required|exists:wallets,id' : 'nullable',
+            'wallet_id' => $this->payment_method != 'debt' ? 'required' : 'nullable',
         ]);
 
+        // Jika valid, buka modal
+        $this->showConfirmationModal = true;
+    }
+
+    public function save()
+    {
+        // Validasi ulang (security)
+        $this->validate([ 'amount' => 'required|numeric|min:1' ]);
+
         DB::transaction(function () {
-            
-            // 2. Simpan Record Keuangan Utama
+            // 1. Catat Record
             FinanceRecord::create([
                 'user_id' => Auth::id(),
                 'type' => $this->type,
                 'amount' => $this->amount,
-                // Jika hutang, wallet_id bisa null atau pakai dummy, di sini kita pakai wallet pertama sebagai placeholder
                 'wallet_id' => $this->payment_method == 'debt' ? Wallet::first()->id : $this->wallet_id,
                 'product_line_id' => $this->product_line_id,
                 'contact_id' => $this->contact_id,
@@ -130,26 +98,22 @@ class Create extends Component
                 'notes' => $this->notes,
                 'payment_method' => $this->payment_method,
                 'due_date' => $this->due_date,
-                // Jika hutang, berarti belum lunas (is_paid = false)
                 'is_paid' => $this->payment_method != 'debt',
             ]);
 
-            // 3. Logika Hutang / Piutang
+            // 2. Handle Hutang/Piutang atau Saldo
             if ($this->payment_method == 'debt') {
-                // Simpan ke tabel Hutang (Debts) untuk dipantau
                 Debt::create([
-                    'contact_id' => $this->contact_id ?? Contact::firstOrCreate(['name' => 'Umum'])->id,
+                    'contact_id' => $this->contact_id ?? Contact::firstOrCreate(['name' => 'Umum', 'type' => 'customer'])->id,
                     'product_line_id' => $this->product_line_id,
-                    // Jika Expense & Hutang = Payable (Utang Dagang)
-                    // Jika Income & Hutang = Receivable (Piutang)
                     'type' => $this->type == 'expense' ? 'payable' : 'receivable',
                     'amount' => $this->amount,
-                    'remaining' => $this->amount, // Sisa hutang di awal sama dengan total
+                    'remaining' => $this->amount,
                     'due_date' => $this->due_date,
-                    'status' => 'unpaid'
+                    'status' => 'unpaid',
+                    'notes' => $this->notes
                 ]);
             } else {
-                // 4. Logika Update Saldo Dompet (Hanya jika Tunai/Transfer)
                 $wallet = Wallet::find($this->wallet_id);
                 if ($this->type == 'income') {
                     $wallet->increment('balance', $this->amount);
@@ -157,12 +121,13 @@ class Create extends Component
                     $wallet->decrement('balance', $this->amount);
                 }
             }
-
         });
 
-        // 5. Feedback & Redirect
+        // [UPDATE] Reset form & Tutup Modal (Tanpa Redirect)
+        $this->reset(['amount', 'notes']);
+        $this->showConfirmationModal = false;
+        
         session()->flash('message', 'Transaksi berhasil disimpan!');
-        return redirect()->route('dashboard');
     }
 
     public function render()
@@ -171,7 +136,7 @@ class Create extends Component
             'wallets' => Wallet::all(),
             'productLines' => ProductLine::all(),
             'contacts' => Contact::orderBy('name')->get(),
-            'categories' => $this->categories // Memanggil computed property
+            'categories' => $this->categories
         ])->layout('layouts.app');
     }
 }

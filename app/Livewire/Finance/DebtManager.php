@@ -13,9 +13,9 @@ use Carbon\Carbon;
 
 class DebtManager extends Component
 {
-    public $activeTab = 'receivable'; // 'receivable' (Orang Utang ke Kita) | 'payable' (Kita Utang ke Supplier)
+    public $activeTab = 'receivable'; // 'receivable' (Piutang) | 'payable' (Utang)
     
-    // Variabel untuk Modal Bayar
+    // Variabel Modal Bayar
     public $selectedDebt;
     public $paymentAmount;
     public $wallet_id;
@@ -23,33 +23,29 @@ class DebtManager extends Component
 
     public function mount()
     {
-        // Default dompet pertama
         $this->wallet_id = Wallet::first()->id ?? null;
     }
 
-    // Buka Modal Bayar
     public function selectDebt($id)
     {
         $this->selectedDebt = Debt::with('contact')->find($id);
-        // Default isi form dengan sisa utang (Langsung Lunas)
-        $this->paymentAmount = $this->selectedDebt->remaining; 
+        $this->paymentAmount = $this->selectedDebt->remaining; // Default langsung lunas
         $this->showPaymentModal = true;
     }
 
     public function processPayment()
     {
         $this->validate([
-            'paymentAmount' => 'required|numeric|min:1|max:' . $this->selectedDebt->remaining,
+            'paymentAmount' => 'required|numeric|min:1|max:' . ($this->selectedDebt->remaining + 100), // +100 toleransi pembulatan
             'wallet_id' => 'required'
         ]);
 
         DB::transaction(function () {
             $debt = $this->selectedDebt;
             
-            // 1. Update Sisa Utang
+            // 1. Kurangi Hutang
             $debt->remaining -= $this->paymentAmount;
             
-            // Cek Lunas?
             if ($debt->remaining <= 0) {
                 $debt->status = 'paid';
                 $debt->remaining = 0;
@@ -58,28 +54,25 @@ class DebtManager extends Component
             }
             $debt->save();
 
-            // 2. Tentukan Arah Uang (Masuk/Keluar)
-            // Jika PIUTANG (Receivable) -> Uang Masuk (Income)
-            // Jika UTANG (Payable) -> Uang Keluar (Expense)
+            // 2. Catat Keuangan
+            // Receivable (Piutang) -> Uang Masuk (Income)
+            // Payable (Utang) -> Uang Keluar (Expense)
             $type = $debt->type == 'receivable' ? 'income' : 'expense';
             $catName = $debt->type == 'receivable' ? 'Pelunasan Piutang' : 'Pembayaran Utang';
-            
-            // Ambil ID Divisi Umum (biasanya ID 1 atau terakhir, sesuaikan logic jika perlu)
-            $generalLineId = ProductLine::first()->id; 
+            $generalLineId = ProductLine::first()->id ?? null; 
 
-            // 3. Catat di Buku Keuangan
             FinanceRecord::create([
                 'user_id' => Auth::id(),
                 'wallet_id' => $this->wallet_id,
-                'product_line_id' => $generalLineId, // Masuk ke kas umum
+                'product_line_id' => $generalLineId,
                 'type' => $type,
                 'amount' => $this->paymentAmount,
                 'category' => $catName,
                 'transaction_date' => Carbon::now(),
-                'notes' => 'Setoran dari ' . $debt->contact->name . ' (Sisa: ' . number_format($debt->remaining) . ')'
+                'notes' => 'Setoran: ' . $debt->contact->name
             ]);
 
-            // 4. Update Saldo Fisik Dompet
+            // 3. Update Saldo Dompet
             $wallet = Wallet::find($this->wallet_id);
             if ($type == 'income') {
                 $wallet->increment('balance', $this->paymentAmount);
@@ -90,16 +83,16 @@ class DebtManager extends Component
 
         $this->showPaymentModal = false;
         $this->reset(['selectedDebt', 'paymentAmount']);
-        session()->flash('message', 'Pembayaran berhasil dicatat! Saldo dompet bertambah.');
+        session()->flash('message', 'Pembayaran Berhasil Dicatat!');
     }
 
     public function render()
     {
-        // Ambil data utang yang BELUM LUNAS
+        // Ambil data yang belum lunas
         $debts = Debt::with('contact')
             ->where('type', $this->activeTab)
             ->whereIn('status', ['unpaid', 'partial']) 
-            ->orderBy('due_date', 'asc') // Yang mau jatuh tempo duluan diatas
+            ->orderBy('due_date', 'asc') // Urutkan berdasarkan jatuh tempo terdekat
             ->get();
 
         return view('livewire.finance.debt-manager', [
