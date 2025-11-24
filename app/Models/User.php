@@ -14,12 +14,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable, SoftDeletes; // [2] Tambahkan SoftDeletes di sini
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'is_active',
-    ];
+    'name',
+    'email',
+    'password',
+    'role', // <--- Pastikan ini ada!
+    'phone', 
+    'address',
+];
 
     protected $hidden = [
         'password',

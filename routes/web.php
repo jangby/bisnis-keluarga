@@ -81,6 +81,7 @@ Route::get('/production/request', RequestMaterial::class)->name('production.requ
 Route::get('/finance/approval', Approval::class)->name('finance.approval');
 Route::get('/production/run', Run::class)->name('production.run');
 Route::get('/settings', SettingsIndex::class)->name('settings.index');
+Route::get('/web-management', \App\Livewire\Web\Manage::class)->name('web.manage');
 Route::get('/finance/debts', DebtManager::class)->name('finance.debts');
 Route::get('/purchase', PurchaseCreate::class)->name('purchase.create');
 
@@ -94,5 +95,11 @@ Route::get('/products/{id}/edit', Form::class)->name('products.edit');
     Route::get('/finance/history', History::class)->name('finance.history');
 Route::get('/activity-log', ActivityLogIndex::class)->name('activity.index');
 });
+
+// Route Area Pengunjung (Toko Online)
+Route::get('/menu', \App\Livewire\Front\Catalog::class)->name('front.index');
+// Placeholder dulu biar tidak error saat diklik menu bawah
+Route::get('/cart', \App\Livewire\Front\Cart::class)->name('front.cart');
+Route::get('/account', \App\Livewire\Front\Account::class)->name('front.account');
 
 require __DIR__.'/auth.php';

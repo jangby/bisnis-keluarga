@@ -99,6 +99,15 @@
     </div>
     <span class="text-[11px] font-semibold text-gray-600 group-hover:text-indigo-600 text-center leading-tight">Belanja<br>Bahan</span>
 </a>
+{{-- MENU BARU: KELOLA WEB --}}
+<a href="{{ route('web.manage') }}" wire:navigate class="group flex flex-col items-center gap-2">
+    <div class="w-14 h-14 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center shadow-sm group-hover:bg-pink-600 group-hover:text-white group-hover:shadow-pink-500/30 group-hover:shadow-lg transition-all duration-300">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9m0 18c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9m0 18c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9" />
+        </svg>
+    </div>
+    <span class="text-[11px] font-semibold text-gray-600 group-hover:text-pink-600 text-center leading-tight">Kelola<br>Web</span>
+</a>
 
                     {{-- 8. EMPTY (Atau Tambahan Lain Nanti) --}}
                      <a href="{{ route('activity.index') }}" wire:navigate class="group flex flex-col items-center gap-2">
