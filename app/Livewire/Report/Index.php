@@ -2,69 +2,72 @@
 
 namespace App\Livewire\Report;
 
-use App\Models\ProductLine;
 use App\Models\FinanceRecord;
+use App\Models\ProductLine;
+use App\Models\Wallet;
 use Livewire\Component;
 use Carbon\Carbon;
 
 class Index extends Component
 {
-    // Filter Waktu
     public $month;
     public $year;
 
     public function mount()
     {
-        // Default bulan & tahun ini
+        // Default bulan ini
         $this->month = Carbon::now()->month;
         $this->year = Carbon::now()->year;
     }
 
     public function render()
     {
-        // 1. Ambil Semua Divisi
+        // 1. Ambil Semua Divisi (Kecap, Sistik, Umum)
         $lines = ProductLine::all();
-        $reportData = [];
-        $grandTotalProfit = 0;
+        
+        $reportPerLine = [];
+        $totalOmzet = 0;
+        $totalExpense = 0;
 
         foreach ($lines as $line) {
-            // Hitung Pemasukan per Divisi bulan ini
-            $income = FinanceRecord::where('product_line_id', $line->id)
-                ->whereYear('transaction_date', $this->year)
-                ->whereMonth('transaction_date', $this->month)
-                ->where('type', 'income')
-                ->sum('amount');
+            // Filter per Divisi & Periode Bulan Ini
+            $query = FinanceRecord::where('product_line_id', $line->id)
+                        ->whereMonth('transaction_date', $this->month)
+                        ->whereYear('transaction_date', $this->year);
 
-            // Hitung Pengeluaran per Divisi bulan ini
-            $expense = FinanceRecord::where('product_line_id', $line->id)
-                ->whereYear('transaction_date', $this->year)
-                ->whereMonth('transaction_date', $this->month)
-                ->where('type', 'expense')
-                ->sum('amount');
+            $income = (clone $query)->where('type', 'income')->sum('amount');
+            $expense = (clone $query)->where('type', 'expense')->sum('amount'); // Termasuk HPP
 
-            // Laba Bersih Divisi
-            $profit = $income - $expense;
-            
-            $grandTotalProfit += $profit;
-
-            // Masukkan ke array data
-            $reportData[] = [
+            $reportPerLine[] = [
+                'id' => $line->id,
                 'name' => $line->name,
-                'desc' => $line->description,
                 'income' => $income,
                 'expense' => $expense,
-                'profit' => $profit
+                'profit' => $income - $expense, // Laba Bersih per Divisi
+                'description' => $line->description
             ];
+
+            $totalOmzet += $income;
+            $totalExpense += $expense;
         }
 
+        // 2. Ambil Total Uang Real (Saldo Dompet)
+        $realBalance = Wallet::sum('balance');
+
+        // 3. History Transaksi Terakhir
+        $transactions = FinanceRecord::with('product_line')
+            ->whereMonth('transaction_date', $this->month)
+            ->whereYear('transaction_date', $this->year)
+            ->latest('transaction_date')
+            ->get();
+
         return view('livewire.report.index', [
-            'reportData' => $reportData,
-            'grandTotalProfit' => $grandTotalProfit,
-            'months' => [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-            ]
+            'reportPerLine' => $reportPerLine,
+            'totalOmzet' => $totalOmzet,
+            'totalExpense' => $totalExpense,
+            'netProfit' => $totalOmzet - $totalExpense,
+            'realBalance' => $realBalance,
+            'transactions' => $transactions
         ])->layout('layouts.app');
     }
 }

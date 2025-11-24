@@ -15,6 +15,7 @@ use App\Livewire\Settings\Index as SettingsIndex;
 // Import Model agar dikenali
 use App\Models\Wallet;
 use App\Models\FinanceRecord;
+use App\Livewire\Finance\DebtManager;
 
 use Illuminate\Support\Facades\Auth; // Jangan lupa baris ini
 
@@ -61,6 +62,7 @@ Route::get('/production/request', RequestMaterial::class)->name('production.requ
 Route::get('/finance/approval', Approval::class)->name('finance.approval');
 Route::get('/production/run', Run::class)->name('production.run');
 Route::get('/settings', SettingsIndex::class)->name('settings.index');
+Route::get('/finance/debts', DebtManager::class)->name('finance.debts');
 
 // Route Edit Produk (Membawa parameter {id})
 Route::get('/products/{id}/edit', Form::class)->name('products.edit');
