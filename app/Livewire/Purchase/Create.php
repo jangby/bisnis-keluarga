@@ -25,7 +25,7 @@ class Create extends Component
     public $date;
     public $notes;
 
-    // [BARU] State Modal Konfirmasi
+    // State Modal Konfirmasi
     public $showConfirmationModal = false;
 
     public function mount()
@@ -46,7 +46,6 @@ class Create extends Component
         }
     }
 
-    // [BARU] Validasi Awal (Sebelum Buka Modal)
     public function confirmSave()
     {
         $this->validate([
@@ -57,17 +56,15 @@ class Create extends Component
             'date' => 'required|date',
         ]);
 
-        // Jika valid, tampilkan modal
         $this->showConfirmationModal = true;
     }
 
-    // Eksekusi Simpan (Setelah dikonfirmasi di Modal)
     public function save()
     {
         DB::transaction(function () {
             $product = Product::find($this->product_id);
             
-            // 1. Catat Uang Keluar (Expense)
+            // 1. Catat Uang Keluar
             FinanceRecord::create([
                 'user_id' => Auth::id(),
                 'wallet_id' => $this->wallet_id,
@@ -77,14 +74,14 @@ class Create extends Component
                 'amount' => $this->total_cost,
                 'category' => 'Belanja Bahan Baku',
                 'transaction_date' => $this->date,
-                'notes' => "Beli {$product->name} ({$this->quantity} {$product->unit}) " . ($this->notes ? "- {$this->notes}" : ''),
+                'notes' => "Beli {$product->name} ({$this->quantity} {$product->unit})",
                 'is_paid' => true
             ]);
 
             // 2. Kurangi Saldo Dompet
             Wallet::find($this->wallet_id)->decrement('balance', $this->total_cost);
 
-            // 3. Update HPP (Weighted Average)
+            // 3. Hitung HPP Baru (Average) & Stok
             $oldValue = $product->current_stock * $product->base_price;
             $newValue = $this->total_cost; 
             $totalStock = $product->current_stock + $this->quantity;
@@ -93,12 +90,14 @@ class Create extends Component
                 $newBasePrice = ($oldValue + $newValue) / $totalStock;
                 $product->base_price = $newBasePrice;
             }
+            
+            // Tambah stok
+            $product->current_stock += $this->quantity;
+            
+            // [PENTING] Pakai saveQuietly() agar TIDAK MEMICU Log "Mengubah Data Produk"
+            $product->saveQuietly();
 
-            // 4. Update Stok & Simpan
-            $product->increment('current_stock', $this->quantity);
-            $product->save();
-
-            // 5. Catat Log Gudang
+            // 4. Catat Log Gudang
             InventoryLog::create([
                 'product_id' => $product->id,
                 'user_id' => Auth::id(),
@@ -107,11 +106,21 @@ class Create extends Component
                 'date' => $this->date,
                 'notes' => 'Pembelian Langsung'
             ]);
+
+            // 5. [BARU] Catat Log Aktivitas Manual (Satu Baris Rapi)
+            \App\Models\ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'Belanja',
+                'subject_type' => 'Purchase',
+                'subject_id' => null,
+                'description' => "Membeli {$product->name} sebanyak {$this->quantity} {$product->unit} (Total: Rp " . number_format($this->total_cost, 0, ',', '.') . ")",
+                'properties' => ['color' => 'bg-indigo-100 text-indigo-700', 'icon' => '🛍️'],
+                'ip_address' => request()->ip()
+            ]);
         });
 
         session()->flash('message', 'Pembelian Berhasil! Stok & Keuangan telah diupdate.');
         
-        // Tutup Modal & Redirect
         $this->showConfirmationModal = false;
         return redirect()->route('products.index');
     }

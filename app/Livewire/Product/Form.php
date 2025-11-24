@@ -6,12 +6,16 @@ use App\Models\Product;
 use App\Models\ProductLine;
 use App\Models\ProductRecipe;
 use Livewire\Component;
+use Livewire\WithFileUploads; // [BARU] Import Trait Upload
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage; // [BARU] Import Storage
 
 class Form extends Component
 {
+    use WithFileUploads; // [BARU] Gunakan Trait
+
     // 1. Identitas
     public $product_id;
     public $name;
@@ -19,13 +23,17 @@ class Form extends Component
     public $product_line_id;
     public $type = 'goods'; 
     
+    // [BARU] Variabel Gambar
+    public $image;          // File baru yang diupload
+    public $oldImage;       // Path gambar lama dari DB
+    
     // 2. Harga & Stok
     public $base_price = 0;
     public $sell_price = 0;
     public $unit = 'Pcs';
     public $current_stock = 0;
     
-    // --- BARU: Stok Minimum ---
+    // Stok Minimum
     public $min_stock = 5; 
 
     // 3. Resep
@@ -51,13 +59,15 @@ class Form extends Component
             $this->name = $product->name;
             $this->code = $product->code;
             $this->type = $product->type;
+            
+            // [BARU] Load gambar lama
+            $this->oldImage = $product->image_path; 
+
             $this->product_line_id = $product->product_line_id;
             $this->base_price = $product->base_price;
             $this->sell_price = $product->sell_price;
             $this->unit = $product->unit;
             $this->current_stock = $product->current_stock;
-            
-            // Load Stok Minimum
             $this->min_stock = $product->min_stock; 
 
             foreach ($product->recipes as $r) {
@@ -127,24 +137,35 @@ class Form extends Component
             'base_price' => 'required|numeric|min:0',
             'sell_price' => 'nullable|numeric|min:0',
             'unit' => 'required',
-            // Validasi min_stock
             'min_stock' => 'required|numeric|min:0', 
+            'image' => 'nullable|image|max:2048', // [BARU] Validasi max 2MB
         ]);
 
         DB::transaction(function () {
+            // [BARU] Logika Simpan Gambar
+            $imagePath = $this->oldImage; 
+            
+            if ($this->image) {
+                // Hapus gambar lama jika ada dan bukan null
+                if ($this->oldImage && Storage::disk('public')->exists($this->oldImage)) {
+                    Storage::disk('public')->delete($this->oldImage);
+                }
+                // Simpan gambar baru ke folder 'products' di storage public
+                $imagePath = $this->image->store('products', 'public');
+            }
+
             $product = Product::updateOrCreate(
                 ['id' => $this->product_id],
                 [
                     'name' => $this->name,
                     'code' => $this->code,
                     'type' => $this->type,
+                    'image_path' => $imagePath, // [BARU] Simpan path ke DB
                     'product_line_id' => $this->product_line_id,
                     'base_price' => $this->base_price,
                     'sell_price' => $this->sell_price ?? 0,
                     'unit' => $this->unit,
                     'current_stock' => $this->product_id ? $this->current_stock : ($this->current_stock ?? 0),
-                    
-                    // Simpan Min Stock
                     'min_stock' => $this->min_stock,
                 ]
             );

@@ -73,8 +73,49 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                     <h3 class="font-bold text-gray-900 text-sm mb-5 flex items-center gap-2">
                         <span class="w-1 h-5 bg-blue-600 rounded-full"></span>
-                        Informasi Identitas
+                        Informasi Identitas & Foto
                     </h3>
+                    
+                    {{-- [BARU] AREA UPLOAD FOTO --}}
+                    <div class="mb-6 flex justify-center">
+                        <div class="relative w-full">
+                            <label class="block w-full cursor-pointer group">
+                                <input type="file" wire:model="image" class="hidden" accept="image/*">
+                                
+                                <div class="relative h-48 w-full rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center overflow-hidden transition-all hover:bg-blue-50 hover:border-blue-400">
+                                    
+                                    @if ($image)
+                                        {{-- Preview Gambar Baru (Temporary) --}}
+                                        <img src="{{ $image->temporaryUrl() }}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span class="text-white font-bold text-sm">Ganti Foto</span>
+                                        </div>
+                                    @elseif($oldImage)
+                                        {{-- Preview Gambar Lama (Dari DB) --}}
+                                        <img src="{{ asset('storage/' . $oldImage) }}" class="absolute inset-0 w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span class="text-white font-bold text-sm">Ganti Foto</span>
+                                        </div>
+                                    @else
+                                        {{-- Tampilan Kosong --}}
+                                        <div class="text-center p-4">
+                                            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-2">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            </div>
+                                            <span class="block text-sm font-bold text-gray-500">Upload Foto Produk</span>
+                                            <span class="text-[10px] text-gray-400">Tap disini (Maks. 2MB)</span>
+                                        </div>
+                                    @endif
+
+                                    {{-- Loading Indicator --}}
+                                    <div wire:loading wire:target="image" class="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
+                                        <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    </div>
+                                </div>
+                            </label>
+                            @error('image') <span class="text-red-500 text-xs mt-1 block text-center">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {{-- Kategori --}}
@@ -265,7 +306,8 @@
             </div>
             
             {{-- FLOATING ACTION BUTTON (Mobile Sticky Footer) --}}
-            <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 lg:static lg:bg-transparent lg:border-none lg:p-0 lg:col-span-3 z-20">
+            {{-- Ubah bottom-0 menjadi bottom-20 (atau sesuaikan tingginya) agar naik di atas navigasi bawah --}}
+            <div class="fixed bottom-20 lg:bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 lg:static lg:bg-transparent lg:border-none lg:p-0 lg:col-span-3 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none">
                 <div class="max-w-5xl mx-auto flex gap-3">
                     <a href="{{ route('products.index') }}" wire:navigate class="hidden lg:flex px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition">
                         Batal
