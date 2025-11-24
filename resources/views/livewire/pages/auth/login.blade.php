@@ -2,6 +2,7 @@
 
 use App\Livewire\Forms\LoginForm;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth; // Tambahkan Facade Auth
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
@@ -20,7 +21,21 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('front.index', absolute: false), navigate: true);
+        // --- LOGIKA REDIRECT DINAMIS ---
+        $user = Auth::user();
+
+        // Tentukan tujuan default berdasarkan role
+        if ($user->role === 'pelanggan') {
+            // Jika Pelanggan, arahkan ke Toko/Menu
+            $destination = route('front.index', absolute: false);
+        } else {
+            // Jika Owner, Keuangan, Produksi, dll -> Arahkan ke Dashboard
+            $destination = route('dashboard', absolute: false);
+        }
+
+        // redirectIntended akan memprioritaskan URL yang ingin diakses sebelumnya.
+        // Jika tidak ada (login langsung), maka gunakan $destination yang kita atur di atas.
+        $this->redirectIntended(default: $destination, navigate: true);
     }
 }; ?>
 
