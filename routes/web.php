@@ -15,6 +15,8 @@ use App\Livewire\Report\Detail as ReportDetail;
 use App\Livewire\Purchase\Create as PurchaseCreate;
 use App\Livewire\Finance\History;
 use App\Livewire\Activity\Index as ActivityLogIndex;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 
 // Import Model agar dikenali
 use App\Models\Wallet;
@@ -23,7 +25,20 @@ use App\Livewire\Finance\DebtManager;
 
 use Illuminate\Support\Facades\Auth; // Jangan lupa baris ini
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    // AMBIL PRODUK JADI SAJA
+    // Filter: Stok > 0, Harga Jual > 0, dan (Opsional) hanya yang ditandai 'is_featured'
+    $products = Product::query()
+        ->where('current_stock', '>', 0)
+        ->where('sell_price', '>', 0) // Filter ampuh membuang bahan baku (asumsi bahan baku harga jualnya 0/kosong)
+        ->when(Schema::hasColumn('products', 'is_featured'), function ($query) {
+             $query->where('is_featured', true); // Gunakan ini jika kolom is_featured sudah ada
+        })
+        ->latest()
+        ->get();
+
+    return view('welcome', compact('products'));
+});
 
 Route::post('/logout', function () {
     Auth::logout();
