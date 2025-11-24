@@ -71,7 +71,7 @@ class CheckLowStockReminder extends Command
         $message .= "Mohon segera tindak lanjuti.";
 
         // 2. Konfigurasi WAHA (Sesuai data Anda)
-        $wahaUrl = 'http://localhost:3000/api/sendText';
+        $wahaUrl = 'http://72.61.208.130:3000/api/sendText';
         $chatId = '120363404018478772@g.us'; // ID Grup Keluarga
         $apiKey = '0f0eb5d196b6459781f7d854aac5050e'; // API Key WAHA
 

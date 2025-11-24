@@ -93,13 +93,20 @@
                         <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-800 text-center leading-tight">Setting<br>Akun</span>
                     </a>
 
+                    <a href="{{ route('purchase.create') }}" wire:navigate class="group flex flex-col items-center gap-2">
+    <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-indigo-500/30 group-hover:shadow-lg transition-all duration-300">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+    </div>
+    <span class="text-[11px] font-semibold text-gray-600 group-hover:text-indigo-600 text-center leading-tight">Belanja<br>Bahan</span>
+</a>
+
                     {{-- 8. EMPTY (Atau Tambahan Lain Nanti) --}}
-                     <div class="flex flex-col items-center gap-2 opacity-30">
-                        <div class="w-14 h-14 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                           <span class="text-xs font-bold text-gray-400">+</span>
-                        </div>
-                        <span class="text-[11px] font-medium text-gray-400 text-center">Lainnya</span>
-                    </div>
+                     <a href="{{ route('activity.index') }}" wire:navigate class="group flex flex-col items-center gap-2">
+    <div class="w-14 h-14 rounded-2xl bg-gray-800 text-white flex items-center justify-center shadow-sm group-hover:bg-black transition-all duration-300">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </div>
+    <span class="text-[11px] font-semibold text-gray-600 group-hover:text-black text-center leading-tight">Log<br>Aktivitas</span>
+</a>
 
                 </div>
             </div>
@@ -153,7 +160,9 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h4 class="font-bold text-sm text-gray-700">Aktivitas Terakhir</h4>
-                <a href="{{ route('report.index') }}" class="text-xs text-blue-600 font-bold hover:underline">Lihat Semua</a>
+                <a href="{{ route('finance.history') }}" wire:navigate class="text-xs text-blue-600 font-medium hover:underline">
+        Lihat Semua Aktivitas &rarr;
+    </a>
             </div>
             
             <div class="divide-y divide-gray-100">

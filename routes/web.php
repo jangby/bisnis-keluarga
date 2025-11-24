@@ -11,6 +11,10 @@ use App\Livewire\Production\RequestMaterial;
 use App\Livewire\Finance\Approval;
 use App\Livewire\Production\Run;
 use App\Livewire\Settings\Index as SettingsIndex;
+use App\Livewire\Report\Detail as ReportDetail;
+use App\Livewire\Purchase\Create as PurchaseCreate;
+use App\Livewire\Finance\History;
+use App\Livewire\Activity\Index as ActivityLogIndex;
 
 // Import Model agar dikenali
 use App\Models\Wallet;
@@ -30,16 +34,15 @@ Route::post('/logout', function () {
 
 // ROUTE DASHBOARD (Dengan Data Keuangan)
 Route::get('dashboard', function () {
-    // 1. Hitung Total Uang (Semua Dompet)
     $totalSaldo = Wallet::sum('balance');
 
-    // 2. Ambil 5 Transaksi Terakhir (Terbaru diatas)
+    // Urutkan berdasarkan Tanggal Transaksi DESC, lalu Waktu Input DESC
     $recentTransactions = FinanceRecord::with('product_line') 
-        ->latest('transaction_date')
+        ->orderBy('transaction_date', 'desc') 
+        ->orderBy('created_at', 'desc') // Pastikan yang baru diinput ada di atas
         ->take(5)
         ->get();
 
-    // 3. Kirim data ke tampilan
     return view('dashboard', [
         'totalSaldo' => $totalSaldo,
         'transactions' => $recentTransactions
@@ -56,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/finance/create', Create::class)->name('finance.create');
     Route::get('/pos', Pos::class)->name('pos.index');
     Route::get('/report', ReportIndex::class)->name('report.index');
+    Route::get('/report/{id}', ReportDetail::class)->name('report.detail');
     // Route Tambah Produk Baru
 Route::get('/products/create', Form::class)->name('products.create');
 Route::get('/production/request', RequestMaterial::class)->name('production.request');
@@ -63,6 +67,7 @@ Route::get('/finance/approval', Approval::class)->name('finance.approval');
 Route::get('/production/run', Run::class)->name('production.run');
 Route::get('/settings', SettingsIndex::class)->name('settings.index');
 Route::get('/finance/debts', DebtManager::class)->name('finance.debts');
+Route::get('/purchase', PurchaseCreate::class)->name('purchase.create');
 
 // Route Edit Produk (Membawa parameter {id})
 Route::get('/products/{id}/edit', Form::class)->name('products.edit');
@@ -71,6 +76,8 @@ Route::get('/products/{id}/edit', Form::class)->name('products.edit');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/finance/history', History::class)->name('finance.history');
+Route::get('/activity-log', ActivityLogIndex::class)->name('activity.index');
 });
 
 require __DIR__.'/auth.php';

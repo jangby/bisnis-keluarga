@@ -211,6 +211,17 @@ class Pos extends Component
             }
         });
 
+        // [OPSIONAL] Catat di Log Aktivitas (1 Baris Saja)
+        \App\Models\ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'Transaksi',
+            'subject_type' => 'POS',
+            'subject_id' => null,
+            'description' => 'Melakukan transaksi penjualan senilai Rp ' . number_format($this->totalAmount, 0, ',', '.'),
+            'properties' => ['color' => 'bg-purple-100 text-purple-700', 'icon' => '🛒'],
+            'ip_address' => request()->ip()
+        ]);
+
         // 3. Trigger Print (Jika dicentang) SEBELUM reset cart
         if ($this->print_receipt && $receiptData) {
             $this->dispatch('trigger-print-receipt', data: $receiptData);

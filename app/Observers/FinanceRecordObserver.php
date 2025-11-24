@@ -31,7 +31,7 @@ class FinanceRecordObserver
 
             // 3. Kirim ke Grup WA Keluarga via WAHA
             // Ganti URL dan Session ID sesuai settingan WAHA Anda
-            $wahaUrl = 'http://localhost:3000/api/sendText'; 
+            $wahaUrl = 'http://72.61.208.130:3000/api/sendText'; 
             
             // ID Grup WA Keluarga (Biasanya berakhiran @g.us)
             // Cara cari ID Grup: Lihat dokumentasi WAHA bagian 'GET /api/groups'

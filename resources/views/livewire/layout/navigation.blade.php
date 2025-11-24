@@ -34,6 +34,13 @@ new class extends Component
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+
+                @if(Auth::user()->role === 'owner')
+    <a href="{{ route('activity.index') }}" wire:navigate class="{{ $navClasses }} {{ request()->routeIs('activity.*') ? $activeClasses : $inactiveClasses }}">
+        <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="ml-3 font-medium hidden lg:block">Log Aktivitas</span>
+    </a>
+@endif
             </div>
 
             <!-- Settings Dropdown -->
