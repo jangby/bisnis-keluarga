@@ -101,7 +101,7 @@ class Cart extends Component
     public function getWhatsappUrlProperty()
     {
         // GANTI NOMOR INI DENGAN NOMOR ADMIN ANDA (Format 628xxx)
-        $adminPhone = '6281234567890'; 
+        $adminPhone = '6285797750256'; 
         
         $cart = $this->render()->getData()['cart']; // Ambil data cart yg sudah di-query
         if (!$cart || $cart->items->isEmpty()) return '#';
