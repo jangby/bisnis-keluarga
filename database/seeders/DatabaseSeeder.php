@@ -36,11 +36,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Operasional Umum', 
             'description' => 'Biaya Listrik, Air, Maintenance'
         ]);
-
-        $walletKas = Wallet::create(['name' => 'Kas Tunai (Laci)', 'balance' => 5000000]); // Modal 5jt
-        $walletBank = Wallet::create(['name' => 'Bank BRI Keluarga', 'balance' => 20000000]); // Tabungan 20jt
-        Wallet::create(['name' => 'Gopay Operasional', 'balance' => 500000]);
-
         // ==========================================
         // 2. SETUP USER (KELUARGA)
         // ==========================================
