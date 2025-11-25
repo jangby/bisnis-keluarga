@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Contact;
 use App\Observers\GeneralObserver;
+use Carbon\Carbon;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,14 +21,22 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Pasang CCTV (Observer) ke Model Penting
+        // 1. Observer untuk Produk (Stok, dll)
         Product::observe(GeneralObserver::class);
-        //FinanceRecord::observe(GeneralObserver::class);
+
+        // 2. Observer untuk Keuangan (PENTING: Aktifkan Keduanya)
+        // a. GeneralObserver: Untuk mencatat Log Aktivitas ke database
+        FinanceRecord::observe(GeneralObserver::class); 
+        
+        // b. FinanceRecordObserver: Untuk kirim WA jika transaksi besar (> 5 Juta)
+        FinanceRecord::observe(FinanceRecordObserver::class);
+
+        // 3. Observer Lainnya
         User::observe(GeneralObserver::class);
         Contact::observe(GeneralObserver::class);
         
-        // Set Locale Carbon (WIB)
-        \Carbon\Carbon::setLocale('id');
+        // Set Locale Waktu Indonesia
+        Carbon::setLocale('id');
         config(['app.locale' => 'id']);
     }
 }

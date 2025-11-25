@@ -7,6 +7,13 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 
+    @if (session()->has('message'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
+            class="fixed top-20 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm animate-bounce">
+            ✅ {{ session('message') }}
+        </div>
+    @endif
+
     {{-- HEADER & TOTAL SUMMARY (Sticky) --}}
     <div class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-3xl mx-auto px-4 py-3">
@@ -117,7 +124,6 @@
                             <div>
                                 <h4 class="font-bold text-gray-900 text-sm line-clamp-1">{{ $trx->category }}</h4>
                                 <p class="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5">
-                                    {{-- Badge Divisi --}}
                                     <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-semibold">
                                         {{ $trx->product_line->name ?? 'Umum' }}
                                     </span>
@@ -131,16 +137,27 @@
                             </span>
                         </div>
 
-                        {{-- Catatan --}}
                         @if($trx->notes)
                             <div class="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100 italic line-clamp-2">
                                 "{{ $trx->notes }}"
                             </div>
                         @endif
                         
-                        <p class="text-[10px] text-gray-400 mt-2 text-right font-mono">
-                            {{ $trx->created_at->format('H:i') }} WIB
-                        </p>
+                        <div class="flex justify-between items-end mt-2">
+                            <p class="text-[10px] text-gray-400 font-mono">
+                                {{ $trx->created_at->format('H:i') }} WIB
+                            </p>
+                            
+                            {{-- [BARU] Tombol Aksi (Edit & Hapus) --}}
+                            <div class="flex gap-2">
+                                <button wire:click="edit({{ $trx->id }})" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg font-bold hover:bg-indigo-100 transition">
+                                    Edit
+                                </button>
+                                <button wire:click="delete({{ $trx->id }})" onclick="return confirm('Yakin hapus? Saldo akan dikembalikan.')" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-lg font-bold hover:bg-red-100 transition">
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -161,4 +178,76 @@
         </div>
 
     </div>
+
+    {{-- MODAL EDIT TRANSAKSI --}}
+    @if($showEditModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100">
+                
+                {{-- Modal Header --}}
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-800">Edit Transaksi</h3>
+                    <button wire:click="$set('showEditModal', false)" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+
+                {{-- Modal Body --}}
+                <div class="p-6 space-y-4">
+                    
+                    {{-- Input Nominal --}}
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nominal (Rp)</label>
+                        <input type="number" wire:model="editAmount" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold text-lg">
+                    </div>
+
+                    {{-- Row: Tanggal & Kategori --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal</label>
+                            <input type="date" wire:model="editDate" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Kategori</label>
+                            <input type="text" wire:model="editCategory" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    {{-- Row: Divisi & Wallet --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Divisi / Produk</label>
+                            <select wire:model="editLineId" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500">
+                                @foreach($productLines as $line)
+                                    <option value="{{ $line->id }}">{{ $line->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Dompet / Akun</label>
+                            <select wire:model="editWalletId" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500">
+                                @foreach($wallets as $w)
+                                    <option value="{{ $w->id }}">{{ $w->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Catatan --}}
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Catatan</label>
+                        <textarea wire:model="editNotes" rows="2" class="w-full rounded-xl border-gray-300 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+
+                {{-- Modal Footer --}}
+                <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+                    <button wire:click="$set('showEditModal', false)" class="px-4 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition">
+                        Batal
+                    </button>
+                    <button wire:click="update" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
