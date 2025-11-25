@@ -58,7 +58,7 @@ class Create extends Component
                 'Beban Sewa', 'Listrik & Air', 'Internet & Pulsa',
                 'Transportasi', 'Pemasaran/Iklan', 'Perbaikan/Maintenance',
                 'Perlengkapan Kantor', 'Investasi Alat', 'Pembayaran Utang', 
-                'Prive (Tarik Tunai)', 'Sedekah/Sosial', 'Beban Lain-lain'
+                'Prive (Tarik Tunai)', 'Sedekah/Sosial', 'Beban Gedung', 'Biaya Kemasan', 'Penyusutan Gedung', 'Penyusutan Peralatan','Beban Lain-lain'
             ];
         }
     }
