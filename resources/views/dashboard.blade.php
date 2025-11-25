@@ -85,14 +85,6 @@
                         <span class="text-[11px] font-semibold text-gray-600 group-hover:text-yellow-600 text-center leading-tight">Cek<br>Request</span>
                     </a>
 
-                    {{-- 7. SETTING --}}
-                    <a href="{{ route('settings.index') }}" wire:navigate class="group flex flex-col items-center gap-2">
-                        <div class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-600 flex items-center justify-center shadow-sm group-hover:bg-gray-800 group-hover:text-white group-hover:shadow-gray-500/30 group-hover:shadow-lg transition-all duration-300">
-                            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </div>
-                        <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-800 text-center leading-tight">Setting<br>Akun</span>
-                    </a>
-
                     <a href="{{ route('purchase.create') }}" wire:navigate class="group flex flex-col items-center gap-2">
     <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-indigo-500/30 group-hover:shadow-lg transition-all duration-300">
         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
@@ -103,7 +95,7 @@
 <a href="{{ route('web.manage') }}" wire:navigate class="group flex flex-col items-center gap-2">
     <div class="w-14 h-14 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center shadow-sm group-hover:bg-pink-600 group-hover:text-white group-hover:shadow-pink-500/30 group-hover:shadow-lg transition-all duration-300">
         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9m0 18c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9m0 18c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-9 3-9m-9 9c-1.657 0-3-9-3-9" />
         </svg>
     </div>
     <span class="text-[11px] font-semibold text-gray-600 group-hover:text-pink-600 text-center leading-tight">Kelola<br>Web</span>
@@ -125,6 +117,14 @@
     </div>
     <span class="text-[11px] font-semibold text-gray-600 group-hover:text-black text-center leading-tight">Log<br>Aktivitas</span>
 </a>
+
+                    {{-- 7. SETTING --}}
+                    <a href="{{ route('settings.index') }}" wire:navigate class="group flex flex-col items-center gap-2">
+                        <div class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-600 flex items-center justify-center shadow-sm group-hover:bg-gray-800 group-hover:text-white group-hover:shadow-gray-500/30 group-hover:shadow-lg transition-all duration-300">
+                            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-800 text-center leading-tight">Setting<br>Akun</span>
+                    </a>
 
                 </div>
             </div>
