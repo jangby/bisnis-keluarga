@@ -94,6 +94,7 @@ Route::get('/products/{id}/edit', Form::class)->name('products.edit');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/finance/history', History::class)->name('finance.history');
 Route::get('/activity-log', ActivityLogIndex::class)->name('activity.index');
+Route::get('/orders', \App\Livewire\Order\Manage::class)->name('orders.manage');
 });
 
 // Route Area Pengunjung (Toko Online)
