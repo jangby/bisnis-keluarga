@@ -62,10 +62,10 @@ Route::get('dashboard', function () {
         'totalSaldo' => $totalSaldo,
         'transactions' => $recentTransactions
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'staff'])->name('dashboard'); //
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'staff'])->group(function () {
     
     // Route Produk (Gudang)
     Route::get('/products', Index::class)->name('products.index');

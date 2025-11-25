@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -32,16 +33,27 @@ class Product extends Model
         return $this->belongsToMany(WebCategory::class, 'web_category_product');
     }
 
-    // [BARU] Helper untuk cek apakah produk sedang diskon
-    public function getHasDiscountAttribute()
-    {
-        // Diskon aktif jika discount_price diisi DAN lebih kecil dari harga jual asli
-        return $this->discount_price > 0 && $this->discount_price < $this->sell_price;
-    }
-
     // [BARU] Ambil harga final (Otomatis pilih harga diskon kalau ada)
     public function getFinalPriceAttribute()
     {
         return $this->has_discount ? $this->discount_price : $this->sell_price;
+    }
+
+    // [BARU] Helper untuk URL Gambar
+    public function getImageUrlAttribute()
+    {
+        // Jika ada datanya di database, kembalikan URL lengkapnya
+        if ($this->image_path) {
+            return asset('storage/' . $this->image_path);
+        }
+        
+        // Jika tidak ada, kembalikan null
+        return null;
+    }
+
+    // [BARU] Helper Harga & Diskon (Pastikan ini juga ada biar tidak error)
+    public function getHasDiscountAttribute()
+    {
+        return $this->discount_price > 0 && $this->discount_price < $this->sell_price;
     }
 }

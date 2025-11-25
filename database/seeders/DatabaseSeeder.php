@@ -36,6 +36,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Operasional Umum', 
             'description' => 'Biaya Listrik, Air, Maintenance'
         ]);
+
+
         // ==========================================
         // 2. SETUP USER (KELUARGA)
         // ==========================================
@@ -53,7 +55,6 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'finance',
         ]);
-
         $kakak = User::create([
             'name' => 'Kakak (Produksi)',
             'email' => 'kakak@keluarga.com',
@@ -67,5 +68,5 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'marketing',
         ]);
-    }
+}
 }

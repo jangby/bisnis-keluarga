@@ -32,16 +32,22 @@
         @forelse($products as $product)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full relative group">
                 
-                <div class="h-32 bg-gray-100 w-full object-cover relative">
-                    @if($product->has_discount)
-                        <div class="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-sm">
-                            PROMO
-                        </div>
-                    @endif
-                    <div class="w-full h-full flex items-center justify-center text-4xl text-gray-300">
-                        🍲
-                    </div>
-                </div>
+                <div class="h-32 bg-gray-100 w-full relative overflow-hidden">
+    
+    @if($product->has_discount)
+        <div class="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-sm z-10">
+            PROMO
+        </div>
+    @endif
+
+    @if($product->image_url)
+        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+    @else
+        <div class="w-full h-full flex items-center justify-center text-4xl text-gray-300 bg-gray-50">
+            🍲
+        </div>
+    @endif
+</div>
 
                 <div class="p-3 flex flex-col flex-1">
                     <h3 class="text-sm font-bold text-gray-800 line-clamp-2 leading-tight mb-1">{{ $product->name }}</h3>

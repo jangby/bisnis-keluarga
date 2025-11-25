@@ -126,11 +126,16 @@
                             </div>
                         @endif
 
-                        <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center text-4xl sm:text-5xl mb-3 group-hover:scale-105 transition-transform duration-500 relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 transform -translate-x-full group-hover:translate-x-full"></div>
-                            {{-- Placeholder Emoji --}}
-                            🍽️
-                        </div>
+                        <div class="aspect-square bg-gray-50 rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-500 relative overflow-hidden">
+    
+    @if($product->image_url)
+        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+    @else
+        <div class="text-4xl sm:text-5xl">🍽️</div>
+    @endif
+
+    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 transform -translate-x-full group-hover:translate-x-full"></div>
+</div>
                         
                         <div class="flex-1 flex flex-col">
                             <h3 class="font-bold text-gray-900 text-xs sm:text-base leading-tight mb-1 line-clamp-2 min-h-[2.5em]">
