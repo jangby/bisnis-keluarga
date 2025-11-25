@@ -19,7 +19,7 @@
     <nav class="fixed top-0 w-full z-50 px-4 sm:px-6 py-4 transition-all duration-300 bg-white/90 backdrop-blur-md border-b border-orange-100 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('logos/logo.png') }}" 
+                <img src="{{ asset('logos/logo.PNG') }}" 
      alt="Garut Food Logo" 
      class="w-10 h-10 rounded-xl shadow-lg shadow-orange-200 border-2 border-white object-cover bg-white">
                 <div>
@@ -176,7 +176,7 @@
         <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8 text-center md:text-left">
             <div>
                 <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
-    <img src="{{ asset('logos/logo.png') }}" 
+    <img src="{{ asset('logos/logo.PNG') }}" 
          alt="Garut Food Logo" 
          class="w-8 h-8 rounded-lg object-cover bg-white shadow-sm border border-orange-100">
     <span class="font-black text-xl text-gray-800">Garut Food</span>
@@ -192,15 +192,13 @@
                 <ul class="space-y-2 text-sm text-gray-500">
                     <li>Sistik Keju & Pedas</li>
                     <li>Kecap Manis Kental</li>
-                    <li>Kerupuk Kulit</li>
-                    <li>Dodol Garut</li>
                 </ul>
             </div>
 
             <div>
                 <h4 class="font-bold text-gray-900 mb-4">Hubungi Kami</h4>
                 <p class="text-sm text-gray-500 mb-2">📍 Garut, Jawa Barat</p>
-                <p class="text-sm text-gray-500">📞 0812-3456-7890</p>
+                <p class="text-sm text-gray-500">📞 085797750256</p>
             </div>
         </div>
         <div class="text-center text-xs text-gray-400 mt-10 border-t border-gray-50 pt-6">
