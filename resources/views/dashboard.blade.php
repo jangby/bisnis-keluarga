@@ -100,6 +100,7 @@
     </div>
     <span class="text-[11px] font-semibold text-gray-600 group-hover:text-pink-600 text-center leading-tight">Kelola<br>Web</span>
 </a>
+
 {{-- MENU BARU: MANAJEMEN PESANAN --}}
 <a href="{{ route('orders.manage') }}" wire:navigate class="group flex flex-col items-center gap-2">
     <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm group-hover:bg-orange-600 group-hover:text-white group-hover:shadow-orange-500/30 group-hover:shadow-lg transition-all duration-300">

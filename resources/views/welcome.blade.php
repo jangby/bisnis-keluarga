@@ -19,7 +19,7 @@
     <nav class="fixed top-0 w-full z-50 px-4 sm:px-6 py-4 transition-all duration-300 bg-white/90 backdrop-blur-md border-b border-orange-100 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('storage/logos/logo.png') }}" 
+                <img src="{{ asset('logos/logo.png') }}" 
      alt="Garut Food Logo" 
      class="w-10 h-10 rounded-xl shadow-lg shadow-orange-200 border-2 border-white object-cover bg-white">
                 <div>
@@ -176,11 +176,12 @@
         <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8 text-center md:text-left">
             <div>
                 <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
-    <img src="{{ asset('storage/logos/logo.png') }}" 
+    <img src="{{ asset('logos/logo.png') }}" 
          alt="Garut Food Logo" 
          class="w-8 h-8 rounded-lg object-cover bg-white shadow-sm border border-orange-100">
     <span class="font-black text-xl text-gray-800">Garut Food</span>
 </div>
+
                 <p class="text-sm text-gray-500 leading-relaxed">
                     Menyediakan Sistik renyah dan Kecap manis asli produksi rumahan Garut. Higienis, halal, dan tanpa bahan pengawet berbahaya.
                 </p>
