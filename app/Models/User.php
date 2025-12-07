@@ -20,6 +20,7 @@ class User extends Authenticatable
     'role', // <--- Pastikan ini ada!
     'phone', 
     'address',
+    'daily_salary',
 ];
 
     protected $hidden = [
@@ -32,6 +33,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'daily_salary' => 'decimal:2',
         ];
     }
 

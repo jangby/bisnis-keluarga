@@ -94,6 +94,11 @@
                         <option value="owner">Owner (Pemilik)</option>
                     </select>
                 </div>
+
+                <div>
+    <label class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Gaji Harian (Rp)</label>
+    <input wire:model="daily_salary" type="number" class="w-full rounded-lg border-gray-300 text-sm focus:ring-purple-500 focus:border-purple-500" placeholder="Contoh: 100000">
+</div>
             </div>
 
             <div class="flex justify-end gap-3 pt-2">

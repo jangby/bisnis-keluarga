@@ -110,4 +110,6 @@ Route::get('/menu', \App\Livewire\Front\Catalog::class)->name('front.index');
 Route::get('/cart', \App\Livewire\Front\Cart::class)->name('front.cart');
 Route::get('/account', \App\Livewire\Front\Account::class)->name('front.account');
 
+Route::get('/payroll', App\Livewire\Payroll\Index::class)->name('payroll.index');
+
 require __DIR__.'/auth.php';

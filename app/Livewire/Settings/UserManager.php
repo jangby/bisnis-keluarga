@@ -13,6 +13,7 @@ class UserManager extends Component
     public $name, $email, $password, $role = 'staff';
     public $isEditing = false;
     public $editId;
+    public $daily_salary = 0;
 
     public function render()
     {
@@ -43,6 +44,7 @@ class UserManager extends Component
                 'name' => $this->name,
                 'email' => $this->email,
                 'role' => $this->role,
+                'daily_salary' => $this->daily_salary,
             ];
             if ($this->password) {
                 $data['password'] = Hash::make($this->password);
@@ -58,6 +60,7 @@ class UserManager extends Component
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
                 'role' => $this->role,
+                'daily_salary' => $this->daily_salary,
             ]);
 
             // [UBAH DI SINI]
@@ -75,6 +78,7 @@ class UserManager extends Component
         $this->email = $user->email;
         $this->role = $user->role;
         $this->isEditing = true;
+        $this->daily_salary = $user->daily_salary;
     }
 
     public function delete($id)
@@ -104,5 +108,6 @@ class UserManager extends Component
         $this->role = 'staff';
         $this->isEditing = false;
         $this->editId = null;
+        $this->daily_salary = 0;
     }
 }
