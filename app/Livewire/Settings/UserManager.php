@@ -10,23 +10,21 @@ use Illuminate\Support\Facades\Auth;
 class UserManager extends Component
 {
     public $users;
-    public $name, $email, $password, $role = 'staff'; // Ubah default jadi staff agar lebih aman
+    public $name, $email, $password, $role = 'staff';
     public $isEditing = false;
     public $editId;
 
     public function render()
     {
-        // Ambil semua user, urutkan yang terbaru
         $this->users = User::orderBy('created_at', 'desc')->get();
         return view('livewire.settings.user-manager');
     }
 
     public function save()
     {
-        // [1] Tambahkan 'staff' di sini
         $rules = [
             'name' => 'required|string|max:255',
-            'role' => 'required|in:owner,finance,marketing,production,staff', 
+            'role' => 'required|in:owner,finance,marketing,production,staff',
         ];
 
         if (!$this->isEditing) {
@@ -34,7 +32,7 @@ class UserManager extends Component
             $rules['password'] = 'required|min:6';
         } else {
             $rules['email'] = 'required|email|unique:users,email,' . $this->editId;
-            $rules['password'] = 'nullable|min:6'; 
+            $rules['password'] = 'nullable|min:6';
         }
 
         $this->validate($rules);
@@ -50,7 +48,10 @@ class UserManager extends Component
                 $data['password'] = Hash::make($this->password);
             }
             $user->update($data);
-            session()->flash('message', 'Data user berhasil diperbarui.');
+            
+            // [UBAH DI SINI] Gunakan dispatch notify success
+            $this->dispatch('notify', message: 'Data user berhasil diperbarui.', type: 'success');
+        
         } else {
             User::create([
                 'name' => $this->name,
@@ -58,7 +59,9 @@ class UserManager extends Component
                 'password' => Hash::make($this->password),
                 'role' => $this->role,
             ]);
-            session()->flash('message', 'User baru berhasil ditambahkan.');
+
+            // [UBAH DI SINI]
+            $this->dispatch('notify', message: 'User baru berhasil ditambahkan.', type: 'success');
         }
 
         $this->resetInput();
@@ -77,11 +80,15 @@ class UserManager extends Component
     public function delete($id)
     {
         if ($id == Auth::id()) {
-            session()->flash('error', 'Tidak bisa menghapus akun sendiri!');
+            // [UBAH DI SINI] Gunakan dispatch notify error
+            $this->dispatch('notify', message: 'Tidak bisa menghapus akun sendiri!', type: 'error');
             return;
         }
+
         User::find($id)->delete();
-        session()->flash('message', 'User berhasil dihapus.');
+        
+        // [UBAH DI SINI]
+        $this->dispatch('notify', message: 'User berhasil dihapus.', type: 'success');
     }
 
     public function cancel()
@@ -94,7 +101,7 @@ class UserManager extends Component
         $this->name = '';
         $this->email = '';
         $this->password = '';
-        $this->role = 'staff'; // Reset ke staff
+        $this->role = 'staff';
         $this->isEditing = false;
         $this->editId = null;
     }

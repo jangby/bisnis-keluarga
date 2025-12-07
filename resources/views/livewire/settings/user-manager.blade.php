@@ -13,14 +13,13 @@
         @foreach($users as $user)
             <div class="group bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all relative overflow-hidden">
                 
-                {{-- Role Badge (Corner) --}}
-                {{-- Update logika warna badge untuk staff --}}
+                {{-- Role Badge --}}
                 <div class="absolute top-0 right-0 px-2 py-1 rounded-bl-lg text-[10px] font-bold uppercase tracking-wider
                     {{ $user->role == 'owner' ? 'bg-purple-600 text-white' : 
                       ($user->role == 'finance' ? 'bg-blue-100 text-blue-700' : 
                       ($user->role == 'marketing' ? 'bg-green-100 text-green-700' : 
                       ($user->role == 'production' ? 'bg-orange-100 text-orange-700' : 
-                      'bg-gray-200 text-gray-600'))) }}"> {{-- Default (Staff) jadi abu-abu --}}
+                      'bg-gray-200 text-gray-600'))) }}">
                     {{ $user->role }}
                 </div>
 
@@ -42,7 +41,9 @@
                         Edit
                     </button>
                     @if($user->id != Auth::id())
-                        <button wire:click="delete({{ $user->id }})" onclick="return confirm('Hapus user ini?')" class="flex-1 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                        <button wire:click="delete({{ $user->id }})" 
+                                wire:confirm="Apakah Anda yakin ingin menghapus user ini?" 
+                                class="flex-1 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition">
                             Hapus
                         </button>
                     @endif
@@ -86,7 +87,7 @@
                 <div>
                     <label class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Posisi / Role</label>
                     <select wire:model="role" class="w-full rounded-lg border-gray-300 text-sm focus:ring-purple-500 focus:border-purple-500 bg-white">
-                        <option value="staff">Staff (Karyawan Umum)</option> {{-- Opsi Baru --}}
+                        <option value="staff">Staff (Karyawan Umum)</option>
                         <option value="finance">Finance (Keuangan)</option>
                         <option value="marketing">Marketing (Kasir)</option>
                         <option value="production">Production (Gudang)</option>
@@ -106,15 +107,4 @@
         </form>
     </div>
 
-    {{-- Notifikasi --}}
-    @if (session()->has('message'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" class="mt-4 bg-green-100 text-green-700 text-xs font-bold px-4 py-3 rounded-xl text-center animate-fade-in-down">
-            {{ session('message') }}
-        </div>
-    @endif
-    @if (session()->has('error'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" class="mt-4 bg-red-100 text-red-700 text-xs font-bold px-4 py-3 rounded-xl text-center animate-fade-in-down">
-            {{ session('error') }}
-        </div>
-    @endif
 </div>

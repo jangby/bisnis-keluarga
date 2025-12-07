@@ -20,7 +20,6 @@ class Settings extends Component
 
     public function mount()
     {
-        // Load Data Lokasi
         $setting = OfficeSetting::first();
         if ($setting) {
             $this->name = $setting->name;
@@ -30,7 +29,6 @@ class Settings extends Component
         }
     }
 
-    // Fungsi Simpan Lokasi
     public function saveLocation()
     {
         $this->validate([
@@ -50,10 +48,10 @@ class Settings extends Component
             ]
         );
 
-        $this->dispatch('notify', message: 'Lokasi kantor diperbarui!', type: 'success');
+        // [UBAH INI] Pakai Toast
+        $this->dispatch('notify', message: 'Lokasi kantor berhasil diperbarui!', type: 'success');
     }
 
-    // Fungsi Tambah Libur
     public function addHoliday()
     {
         $this->validate([
@@ -68,23 +66,23 @@ class Settings extends Component
             'description' => $this->holiday_desc,
         ]);
 
-        // Reset Form
         $this->holiday_date = '';
         $this->holiday_desc = '';
 
+        // [UBAH INI] Pakai Toast
         $this->dispatch('notify', message: 'Hari libur berhasil ditambahkan!', type: 'success');
     }
 
-    // Fungsi Hapus Libur
     public function deleteHoliday($id)
     {
         Holiday::destroy($id);
-        $this->dispatch('notify', message: 'Hari libur dihapus.', type: 'warning');
+        
+        // [UBAH INI] Pakai Toast Warning
+        $this->dispatch('notify', message: 'Hari libur dihapus dari kalender.', type: 'warning');
     }
 
     public function render()
     {
-        // Ambil data libur yang akan datang & terbaru
         $holidays = Holiday::orderBy('date', 'desc')->paginate(5);
 
         return view('livewire.attendance.settings', [

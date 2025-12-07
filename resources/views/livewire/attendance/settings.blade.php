@@ -20,51 +20,64 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase">Latitude</label>
-                        <input type="text" wire:model="latitude" readonly class="mt-1 block w-full bg-gray-50 text-sm rounded-md border-gray-300 text-gray-500">
+                        <input type="text" wire:model="latitude" readonly class="mt-1 block w-full bg-gray-50 text-sm rounded-md border-gray-300 text-gray-500 cursor-not-allowed">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 uppercase">Longitude</label>
-                        <input type="text" wire:model="longitude" readonly class="mt-1 block w-full bg-gray-50 text-sm rounded-md border-gray-300 text-gray-500">
+                        <input type="text" wire:model="longitude" readonly class="mt-1 block w-full bg-gray-50 text-sm rounded-md border-gray-300 text-gray-500 cursor-not-allowed">
                     </div>
                 </div>
 
                 <div x-data>
-    <button type="button" 
-            @click="
-                if(navigator.geolocation) {
-                    // Beri feedback visual
-                    $el.innerText = 'Sedang mencari titik satelit...';
-                    $el.disabled = true;
+                    <button type="button" 
+                            @click="
+                                if(navigator.geolocation) {
+                                    $el.innerText = 'Sedang mencari titik satelit...';
+                                    $el.disabled = true;
 
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            @this.set('latitude', position.coords.latitude);
-                            @this.set('longitude', position.coords.longitude);
-                            alert('Titik koordinat AKURAT berhasil diambil! Akurasi: ' + Math.round(position.coords.accuracy) + ' meter.');
-                            $el.innerText = 'Update Titik Lokasi Saya';
-                            $el.disabled = false;
-                        },
-                        (error) => {
-                            alert('Gagal mengambil lokasi: ' + error.message);
-                            $el.innerText = 'Update Titik Lokasi Saya';
-                            $el.disabled = false;
-                        },
-                        // OPSI PENTING UNTUK AKURASI
-                        {
-                            enableHighAccuracy: true, 
-                            timeout: 20000, 
-                            maximumAge: 0
-                        }
-                    );
-                } else {
-                    alert('Browser tidak support GPS');
-                }
-            "
-            class="w-full py-2 px-3 bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-100 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        Update Titik Lokasi Saya
-    </button>
-</div>
+                                    navigator.geolocation.getCurrentPosition(
+                                        (position) => {
+                                            @this.set('latitude', position.coords.latitude);
+                                            @this.set('longitude', position.coords.longitude);
+                                            
+                                            // [UBAH INI] Ganti alert() dengan dispatch event notify
+                                            window.dispatchEvent(new CustomEvent('notify', { 
+                                                detail: { 
+                                                    message: 'Koordinat didapatkan! Akurasi: ' + Math.round(position.coords.accuracy) + 'm', 
+                                                    type: 'success' 
+                                                } 
+                                            }));
+
+                                            $el.innerText = 'Update Titik Lokasi Saya';
+                                            $el.disabled = false;
+                                        },
+                                        (error) => {
+                                            // [UBAH INI] Error juga pakai Toast
+                                            window.dispatchEvent(new CustomEvent('notify', { 
+                                                detail: { 
+                                                    message: 'Gagal ambil GPS: ' + error.message, 
+                                                    type: 'error' 
+                                                } 
+                                            }));
+
+                                            $el.innerText = 'Update Titik Lokasi Saya';
+                                            $el.disabled = false;
+                                        },
+                                        {
+                                            enableHighAccuracy: true, 
+                                            timeout: 20000, 
+                                            maximumAge: 0
+                                        }
+                                    );
+                                } else {
+                                    alert('Browser tidak support GPS');
+                                }
+                            "
+                            class="w-full py-2 px-3 bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-100 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Update Titik Lokasi Saya
+                    </button>
+                </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Radius (Meter)</label>
@@ -75,7 +88,7 @@
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition">
+                    <button type="submit" class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition transform active:scale-95">
                         Simpan Lokasi
                     </button>
                 </div>
