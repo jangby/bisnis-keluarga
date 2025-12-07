@@ -119,6 +119,38 @@
     <span class="text-[11px] font-semibold text-gray-600 group-hover:text-black text-center leading-tight">Log<br>Aktivitas</span>
 </a>
 
+{{-- MENU BARU: ABSENSI KARYAWAN --}}
+<a href="{{ route('attendance.index') }}" wire:navigate class="group flex flex-col items-center gap-2">
+    <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shadow-sm group-hover:bg-teal-600 group-hover:text-white group-hover:shadow-teal-500/30 group-hover:shadow-lg transition-all duration-300">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </div>
+    <span class="text-[11px] font-semibold text-gray-600 group-hover:text-teal-600 text-center leading-tight">Absensi<br>Pegawai</span>
+</a>
+
+{{-- MENU BARU: MONITORING ABSENSI --}}
+<a href="{{ route('attendance.monitoring') }}" wire:navigate class="group flex flex-col items-center gap-2">
+    <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-indigo-500/30 group-hover:shadow-lg transition-all duration-300">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+    </div>
+    <span class="text-[11px] font-semibold text-gray-600 group-hover:text-indigo-600 text-center leading-tight">Data<br>Absensi</span>
+</a>
+
+{{-- MENU BARU: SETTING RADIUS --}}
+<a href="{{ route('attendance.settings') }}" wire:navigate class="group flex flex-col items-center gap-2">
+    <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shadow-sm group-hover:bg-red-600 group-hover:text-white group-hover:shadow-red-500/30 group-hover:shadow-lg transition-all duration-300">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </div>
+    <span class="text-[11px] font-semibold text-gray-600 group-hover:text-red-600 text-center leading-tight">Setting<br>Lokasi</span>
+</a>
+
                     {{-- 7. SETTING --}}
                     <a href="{{ route('settings.index') }}" wire:navigate class="group flex flex-col items-center gap-2">
                         <div class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-600 flex items-center justify-center shadow-sm group-hover:bg-gray-800 group-hover:text-white group-hover:shadow-gray-500/30 group-hover:shadow-lg transition-all duration-300">

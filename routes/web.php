@@ -95,6 +95,13 @@ Route::get('/products/{id}/edit', Form::class)->name('products.edit');
     Route::get('/finance/history', History::class)->name('finance.history');
 Route::get('/activity-log', ActivityLogIndex::class)->name('activity.index');
 Route::get('/orders', \App\Livewire\Order\Manage::class)->name('orders.manage');
+
+Route::get('/attendance', function () {
+    return view('attendance.index'); // Kita akan buat file view ini
+})->middleware(['auth', 'verified'])->name('attendance.index');
+
+Route::get('/attendance/settings', App\Livewire\Attendance\Settings::class)->name('attendance.settings');
+Route::get('/attendance/monitoring', App\Livewire\Attendance\Monitoring::class)->name('attendance.monitoring');
 });
 
 // Route Area Pengunjung (Toko Online)
