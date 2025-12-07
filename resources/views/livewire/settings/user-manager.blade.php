@@ -14,10 +14,13 @@
             <div class="group bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all relative overflow-hidden">
                 
                 {{-- Role Badge (Corner) --}}
+                {{-- Update logika warna badge untuk staff --}}
                 <div class="absolute top-0 right-0 px-2 py-1 rounded-bl-lg text-[10px] font-bold uppercase tracking-wider
                     {{ $user->role == 'owner' ? 'bg-purple-600 text-white' : 
                       ($user->role == 'finance' ? 'bg-blue-100 text-blue-700' : 
-                      ($user->role == 'marketing' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700')) }}">
+                      ($user->role == 'marketing' ? 'bg-green-100 text-green-700' : 
+                      ($user->role == 'production' ? 'bg-orange-100 text-orange-700' : 
+                      'bg-gray-200 text-gray-600'))) }}"> {{-- Default (Staff) jadi abu-abu --}}
                     {{ $user->role }}
                 </div>
 
@@ -83,6 +86,7 @@
                 <div>
                     <label class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Posisi / Role</label>
                     <select wire:model="role" class="w-full rounded-lg border-gray-300 text-sm focus:ring-purple-500 focus:border-purple-500 bg-white">
+                        <option value="staff">Staff (Karyawan Umum)</option> {{-- Opsi Baru --}}
                         <option value="finance">Finance (Keuangan)</option>
                         <option value="marketing">Marketing (Kasir)</option>
                         <option value="production">Production (Gudang)</option>

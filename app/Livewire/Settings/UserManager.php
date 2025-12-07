@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class UserManager extends Component
 {
     public $users;
-    public $name, $email, $password, $role = 'finance'; // Default role
+    public $name, $email, $password, $role = 'staff'; // Ubah default jadi staff agar lebih aman
     public $isEditing = false;
     public $editId;
 
@@ -23,9 +23,10 @@ class UserManager extends Component
 
     public function save()
     {
+        // [1] Tambahkan 'staff' di sini
         $rules = [
             'name' => 'required|string|max:255',
-            'role' => 'required|in:owner,finance,marketing,production',
+            'role' => 'required|in:owner,finance,marketing,production,staff', 
         ];
 
         if (!$this->isEditing) {
@@ -33,7 +34,7 @@ class UserManager extends Component
             $rules['password'] = 'required|min:6';
         } else {
             $rules['email'] = 'required|email|unique:users,email,' . $this->editId;
-            $rules['password'] = 'nullable|min:6'; // Password opsional saat edit
+            $rules['password'] = 'nullable|min:6'; 
         }
 
         $this->validate($rules);
@@ -93,7 +94,7 @@ class UserManager extends Component
         $this->name = '';
         $this->email = '';
         $this->password = '';
-        $this->role = 'finance';
+        $this->role = 'staff'; // Reset ke staff
         $this->isEditing = false;
         $this->editId = null;
     }
