@@ -2,82 +2,78 @@
 
 namespace App\Livewire\Finance;
 
-use App\Models\PurchaseRequest;
-use App\Models\Wallet;
-use App\Models\FinanceRecord;
-use App\Models\InventoryLog;
-use App\Models\Product;
 use Livewire\Component;
+use App\Models\FinanceRecord;
+use App\Models\ProductionRequest; // Import Model Baru
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class Approval extends Component
 {
-    public $selectedRequest; // Request yang sedang dibuka
-    public $pay_amount; // Nominal yang harus dibayar Real
-    public $wallet_id; // Pakai uang mana
-
     public function approve($id)
     {
-        // Buka Modal Konfirmasi
-        $this->selectedRequest = PurchaseRequest::find($id);
-        $this->pay_amount = $this->selectedRequest->product->base_price * $this->selectedRequest->quantity; // Estimasi awal
-        $this->wallet_id = Wallet::first()->id;
-    }
-
-    public function confirmApprove()
-    {
-        // LOGIKA INTI: APPROVE = BAYAR & TAMBAH STOK
-        DB::transaction(function () {
-            $req = $this->selectedRequest;
-
-            // 1. Catat Pengeluaran Uang
-            FinanceRecord::create([
-                'user_id' => Auth::id(),
-                'type' => 'expense',
-                'amount' => $this->pay_amount,
-                'wallet_id' => $this->wallet_id,
-                'product_line_id' => $req->product->product_line_id, // Beban masuk ke divisi produk tsb
-                'category' => 'Pembelian Bahan Baku',
-                'transaction_date' => Carbon::now(),
-                'notes' => 'Approval Request #' . $req->id . ' (' . $req->product->name . ')',
-            ]);
-
-            // 2. Kurangi Saldo Dompet
-            Wallet::find($this->wallet_id)->decrement('balance', $this->pay_amount);
-
-            // 3. Tambah Stok Gudang
-            Product::find($req->product_id)->increment('current_stock', $req->quantity);
-
-            // 4. Catat Log Stok
-            InventoryLog::create([
-                'product_id' => $req->product_id,
-                'user_id' => Auth::id(),
-                'type' => 'purchase_in', // Barang Masuk Beli
-                'quantity' => $req->quantity,
-                'date' => Carbon::now(),
-                'notes' => 'Pembelian disetujui Keuangan'
-            ]);
-
-            // 5. Update Status Request
-            $req->update(['status' => 'approved']);
-        });
-
-        session()->flash('message', 'Pembelian Disetujui & Stok Bertambah!');
-        $this->reset(['selectedRequest', 'pay_amount']);
+        // Logika Approval Keuangan (Lama)
+        $record = FinanceRecord::find($id);
+        if ($record) {
+            $record->update(['status' => 'approved']);
+            // Jika expense, kurangi saldo dompet
+            if ($record->type == 'expense' && $record->wallet_id) {
+                $wallet = \App\Models\Wallet::find($record->wallet_id);
+                if ($wallet) $wallet->decrement('balance', $record->amount);
+            }
+            // Jika income, tambah saldo
+            elseif ($record->type == 'income' && $record->wallet_id) {
+                $wallet = \App\Models\Wallet::find($record->wallet_id);
+                if ($wallet) $wallet->increment('balance', $record->amount);
+            }
+            
+            $this->dispatch('show-toast', type: 'success', message: 'Transaksi Keuangan Disetujui');
+        }
     }
 
     public function reject($id)
     {
-        PurchaseRequest::where('id', $id)->update(['status' => 'rejected']);
+        FinanceRecord::where('id', $id)->update(['status' => 'rejected']);
+        $this->dispatch('show-toast', type: 'error', message: 'Transaksi Ditolak');
+    }
+
+    // --- TAMBAHAN: LOGIKA APPROVAL REQUEST BAHAN ---
+    
+    public function approveMaterial($id)
+    {
+        $req = ProductionRequest::find($id);
+        if ($req) {
+            $req->update(['status' => 'approved']);
+            
+            // Opsional: Anda bisa otomatis buat Finance Record (Expense) disini jika mau
+            // Tapi untuk sekarang kita tandai saja sebagai 'approved' agar bisa dibelanjakan
+            
+            $this->dispatch('show-toast', type: 'success', message: 'Request Bahan Disetujui! Silakan proses pembelian.');
+        }
+    }
+
+    public function rejectMaterial($id)
+    {
+        ProductionRequest::where('id', $id)->update(['status' => 'rejected']);
+        $this->dispatch('show-toast', type: 'error', message: 'Request Bahan Ditolak.');
     }
 
     public function render()
     {
+        // 1. Ambil Pengajuan Keuangan
+        $financeRequests = FinanceRecord::with(['user', 'product_line'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 2. Ambil Pengajuan Stok Bahan (BARU)
+        $materialRequests = ProductionRequest::with('user')
+            ->where('status', 'pending')
+            ->orderBy('requested_at', 'desc')
+            ->get();
+
         return view('livewire.finance.approval', [
-            'requests' => PurchaseRequest::where('status', 'pending')->with('product', 'user')->get(),
-            'wallets' => Wallet::all()
+            'requests' => $financeRequests,
+            'materialRequests' => $materialRequests // Kirim ke view
         ])->layout('layouts.app');
     }
 }

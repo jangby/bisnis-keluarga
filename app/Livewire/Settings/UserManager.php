@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Auth;
 class UserManager extends Component
 {
     public $users;
-    public $name, $email, $password, $role = 'staff';
+    // Tambahkan properti $phone
+    public $name, $email, $password, $phone, $role = 'staff'; 
+    public $daily_salary = 0;
     public $isEditing = false;
     public $editId;
-    public $daily_salary = 0;
 
     public function render()
     {
@@ -23,9 +24,10 @@ class UserManager extends Component
 
     public function save()
     {
+        // [UPDATE] Tambahkan 'inventory' ke dalam daftar validasi role
         $rules = [
             'name' => 'required|string|max:255',
-            'role' => 'required|in:owner,finance,marketing,production,staff',
+            'role' => 'required|in:owner,finance,marketing,production,inventory,staff',
         ];
 
         if (!$this->isEditing) {
@@ -51,7 +53,6 @@ class UserManager extends Component
             }
             $user->update($data);
             
-            // [UBAH DI SINI] Gunakan dispatch notify success
             $this->dispatch('notify', message: 'Data user berhasil diperbarui.', type: 'success');
         
         } else {
@@ -63,7 +64,6 @@ class UserManager extends Component
                 'daily_salary' => $this->daily_salary,
             ]);
 
-            // [UBAH DI SINI]
             $this->dispatch('notify', message: 'User baru berhasil ditambahkan.', type: 'success');
         }
 
@@ -76,23 +76,21 @@ class UserManager extends Component
         $this->editId = $user->id;
         $this->name = $user->name;
         $this->email = $user->email;
+        $this->phone = $user->phone; // Load Phone
         $this->role = $user->role;
-        $this->isEditing = true;
         $this->daily_salary = $user->daily_salary;
+        $this->isEditing = true;
     }
 
     public function delete($id)
     {
         if ($id == Auth::id()) {
-            // [UBAH DI SINI] Gunakan dispatch notify error
             $this->dispatch('notify', message: 'Tidak bisa menghapus akun sendiri!', type: 'error');
             return;
         }
 
         User::find($id)->delete();
-        
-        // [UBAH DI SINI]
-        $this->dispatch('notify', message: 'User berhasil dihapus.', type: 'success');
+        $this->dispatch('notify', message: 'User dihapus.', type: 'success');
     }
 
     public function cancel()
@@ -105,9 +103,10 @@ class UserManager extends Component
         $this->name = '';
         $this->email = '';
         $this->password = '';
+        $this->phone = ''; // Reset Phone
         $this->role = 'staff';
+        $this->daily_salary = 0;
         $this->isEditing = false;
         $this->editId = null;
-        $this->daily_salary = 0;
     }
 }

@@ -16,12 +16,12 @@ class Index extends Component
     public $userId = '';
     public $date = '';
 
-    // [BARU] Pengecekan Keamanan di sini
+    // [UPDATE] Pengecekan Keamanan
     public function mount()
     {
-        // Cek apakah user yang login adalah Owner
-        if (Auth::user()->role !== 'owner') {
-            abort(403, 'Akses Ditolak. Halaman ini khusus Owner.');
+        // Pastikan 'inventory' ada di sini
+        if (!in_array(Auth::user()->role, ['owner', 'inventory'])) {
+            abort(403, 'Akses Ditolak.');
         }
     }
 

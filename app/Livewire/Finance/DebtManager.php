@@ -13,9 +13,7 @@ use Carbon\Carbon;
 
 class DebtManager extends Component
 {
-    public $activeTab = 'receivable'; // 'receivable' (Piutang) | 'payable' (Utang)
-    
-    // Variabel Modal Bayar
+    public $activeTab = 'receivable'; 
     public $selectedDebt;
     public $paymentAmount;
     public $wallet_id;
@@ -28,15 +26,16 @@ class DebtManager extends Component
 
     public function selectDebt($id)
     {
-        $this->selectedDebt = Debt::with('contact')->find($id);
-        $this->paymentAmount = $this->selectedDebt->remaining; // Default langsung lunas
+        // [PERBAIKAN 1] Load juga relasi employee
+        $this->selectedDebt = Debt::with(['contact', 'employee'])->find($id);
+        $this->paymentAmount = $this->selectedDebt->remaining; 
         $this->showPaymentModal = true;
     }
 
     public function processPayment()
     {
         $this->validate([
-            'paymentAmount' => 'required|numeric|min:1|max:' . ($this->selectedDebt->remaining + 100), // +100 toleransi pembulatan
+            'paymentAmount' => 'required|numeric|min:1|max:' . ($this->selectedDebt->remaining + 100),
             'wallet_id' => 'required'
         ]);
 
@@ -54,11 +53,12 @@ class DebtManager extends Component
             }
             $debt->save();
 
-            // 2. Catat Keuangan
-            // Receivable (Piutang) -> Uang Masuk (Income)
-            // Payable (Utang) -> Uang Keluar (Expense)
+            // [PERBAIKAN 2] Tentukan Nama (Kontak atau Karyawan) untuk catatan
+            $debtorName = $debt->contact ? $debt->contact->name : ($debt->employee ? $debt->employee->name : 'Umum');
+
             $type = $debt->type == 'receivable' ? 'income' : 'expense';
             $catName = $debt->type == 'receivable' ? 'Pelunasan Piutang' : 'Pembayaran Utang';
+            // Pastikan ProductLine nullable di database atau gunakan ID default
             $generalLineId = ProductLine::first()->id ?? null; 
 
             FinanceRecord::create([
@@ -69,7 +69,7 @@ class DebtManager extends Component
                 'amount' => $this->paymentAmount,
                 'category' => $catName,
                 'transaction_date' => Carbon::now(),
-                'notes' => 'Setoran: ' . $debt->contact->name
+                'notes' => 'Setoran: ' . $debtorName // Gunakan nama yang sudah dicek
             ]);
 
             // 3. Update Saldo Dompet
@@ -83,16 +83,16 @@ class DebtManager extends Component
 
         $this->showPaymentModal = false;
         $this->reset(['selectedDebt', 'paymentAmount']);
-        session()->flash('message', 'Pembayaran Berhasil Dicatat!');
+        $this->dispatch('notify', message: 'Pembayaran Berhasil Dicatat!', type: 'success'); // Pakai Toast
     }
 
     public function render()
     {
-        // Ambil data yang belum lunas
-        $debts = Debt::with('contact')
+        // [PERBAIKAN 3] Load relasi employee di query utama
+        $debts = Debt::with(['contact', 'employee'])
             ->where('type', $this->activeTab)
             ->whereIn('status', ['unpaid', 'partial']) 
-            ->orderBy('due_date', 'asc') // Urutkan berdasarkan jatuh tempo terdekat
+            ->orderBy('due_date', 'asc') 
             ->get();
 
         return view('livewire.finance.debt-manager', [

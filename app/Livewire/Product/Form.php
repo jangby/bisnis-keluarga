@@ -6,15 +6,15 @@ use App\Models\Product;
 use App\Models\ProductLine;
 use App\Models\ProductRecipe;
 use Livewire\Component;
-use Livewire\WithFileUploads; // [BARU] Import Trait Upload
+use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage; // [BARU] Import Storage
+use Illuminate\Support\Facades\Storage;
 
 class Form extends Component
 {
-    use WithFileUploads; // [BARU] Gunakan Trait
+    use WithFileUploads;
 
     // 1. Identitas
     public $product_id;
@@ -23,9 +23,9 @@ class Form extends Component
     public $product_line_id;
     public $type = 'goods'; 
     
-    // [BARU] Variabel Gambar
-    public $image;          // File baru yang diupload
-    public $oldImage;       // Path gambar lama dari DB
+    // Variabel Gambar
+    public $image;          
+    public $oldImage;       
     
     // 2. Harga & Stok
     public $base_price = 0;
@@ -41,8 +41,9 @@ class Form extends Component
 
     public function mount($id = null)
     {
-        if (!in_array(Auth::user()->role, ['owner', 'production'])) {
-            return abort(403, 'Akses Ditolak');
+        // [PERBAIKAN DISINI] Tambahkan 'inventory' ke dalam daftar role yang diizinkan
+        if (!in_array(Auth::user()->role, ['owner', 'production', 'inventory'])) {
+            return abort(403, 'Akses Ditolak: Anda tidak memiliki izin mengelola produk.');
         }
 
         if (request()->has('type')) {
@@ -59,10 +60,7 @@ class Form extends Component
             $this->name = $product->name;
             $this->code = $product->code;
             $this->type = $product->type;
-            
-            // [BARU] Load gambar lama
             $this->oldImage = $product->image_path; 
-
             $this->product_line_id = $product->product_line_id;
             $this->base_price = $product->base_price;
             $this->sell_price = $product->sell_price;
@@ -138,19 +136,16 @@ class Form extends Component
             'sell_price' => 'nullable|numeric|min:0',
             'unit' => 'required',
             'min_stock' => 'required|numeric|min:0', 
-            'image' => 'nullable|image|max:2048', // [BARU] Validasi max 2MB
+            'image' => 'nullable|image|max:2048', 
         ]);
 
         DB::transaction(function () {
-            // [BARU] Logika Simpan Gambar
             $imagePath = $this->oldImage; 
             
             if ($this->image) {
-                // Hapus gambar lama jika ada dan bukan null
                 if ($this->oldImage && Storage::disk('public')->exists($this->oldImage)) {
                     Storage::disk('public')->delete($this->oldImage);
                 }
-                // Simpan gambar baru ke folder 'products' di storage public
                 $imagePath = $this->image->store('products', 'public');
             }
 
@@ -160,7 +155,7 @@ class Form extends Component
                     'name' => $this->name,
                     'code' => $this->code,
                     'type' => $this->type,
-                    'image_path' => $imagePath, // [BARU] Simpan path ke DB
+                    'image_path' => $imagePath,
                     'product_line_id' => $this->product_line_id,
                     'base_price' => $this->base_price,
                     'sell_price' => $this->sell_price ?? 0,

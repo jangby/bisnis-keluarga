@@ -11,8 +11,8 @@
                     <p class="text-xs text-gray-500 mt-1">Pantau ketersediaan barang secara real-time</p>
                 </div>
                 
-                {{-- Tombol Tambah (Hanya Desktop) - Muncul di Header --}}
-                @if(in_array(Auth::user()->role, ['owner', 'production']))
+                {{-- Tombol Tambah (Owner, Production, Inventory) --}}
+                @if(in_array(Auth::user()->role, ['owner', 'production', 'inventory']))
                     <a href="{{ route('products.create', ['type' => $filterType]) }}" wire:navigate class="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition shadow-lg shadow-blue-600/20">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         Tambah {{ $filterType == 'goods' ? 'Produk' : 'Bahan' }}
@@ -60,7 +60,12 @@
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Info Produk</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</th>
                         <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Stok</th>
-                        <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Harga Satuan</th>
+                        
+                        {{-- LOGIC: Sembunyikan Header Harga untuk Produksi DAN Inventory --}}
+                        @if(!in_array(Auth::user()->role, ['production', 'inventory']))
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Harga Satuan</th>
+                        @endif
+                        
                         <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -98,14 +103,17 @@
                                 </span>
                             </td>
 
-                            {{-- Kolom Harga --}}
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-700">
-                                Rp {{ number_format($filterType == 'goods' ? $product->sell_price : $product->base_price, 0, ',', '.') }}
-                            </td>
+                            {{-- LOGIC: Sembunyikan Data Harga untuk Produksi DAN Inventory --}}
+                            @if(!in_array(Auth::user()->role, ['production', 'inventory']))
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-700">
+                                    Rp {{ number_format($filterType == 'goods' ? $product->sell_price : $product->base_price, 0, ',', '.') }}
+                                </td>
+                            @endif
 
                             {{-- Kolom Aksi --}}
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                @if(in_array(Auth::user()->role, ['owner', 'production']))
+                                {{-- Izinkan Edit untuk Owner, Production, dan Inventory --}}
+                                @if(in_array(Auth::user()->role, ['owner', 'production', 'inventory']))
                                     <a href="{{ route('products.edit', $product->id) }}" wire:navigate class="text-blue-600 hover:text-blue-900 font-bold hover:underline">Edit</a>
                                 @else
                                     <span class="text-gray-300 cursor-not-allowed">Locked</span>
@@ -114,7 +122,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="{{ !in_array(Auth::user()->role, ['production', 'inventory']) ? 5 : 4 }}" class="px-6 py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center">
                                     <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                                     <p class="font-medium">Data tidak ditemukan</p>
@@ -130,7 +138,8 @@
         <div class="grid grid-cols-1 gap-4 md:hidden">
             @forelse($products as $product)
                 @php 
-                    $canEdit = in_array(Auth::user()->role, ['owner', 'production']);
+                    // Logic Edit untuk Mobile
+                    $canEdit = in_array(Auth::user()->role, ['owner', 'production', 'inventory']);
                     $isLow = $product->current_stock <= 5; 
                 @endphp
                 
@@ -155,9 +164,14 @@
 
                         {{-- Price & Stock --}}
                         <div class="text-right">
-                            <p class="text-sm font-bold {{ $filterType == 'goods' ? 'text-blue-600' : 'text-orange-600' }}">
-                                {{ number_format($filterType == 'goods' ? $product->sell_price/1000 : $product->base_price/1000, 0) }}k
-                            </p>
+                            
+                            {{-- LOGIC: Sembunyikan Harga di Mobile untuk Produksi DAN Inventory --}}
+                            @if(!in_array(Auth::user()->role, ['production', 'inventory']))
+                                <p class="text-sm font-bold {{ $filterType == 'goods' ? 'text-blue-600' : 'text-orange-600' }}">
+                                    {{ number_format($filterType == 'goods' ? $product->sell_price/1000 : $product->base_price/1000, 0) }}k
+                                </p>
+                            @endif
+
                             <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border
                                 {{ $isLow ? 'bg-red-100 text-red-600 border-red-200' : 'bg-green-100 text-green-600 border-green-200' }}">
                                 {{ $product->current_stock }}
@@ -181,7 +195,7 @@
     </div>
 
     {{-- Floating Action Button (FAB) - Mobile Only --}}
-    @if(in_array(Auth::user()->role, ['owner', 'production']))
+    @if(in_array(Auth::user()->role, ['owner', 'production', 'inventory']))
         <a href="{{ route('products.create', ['type' => $filterType]) }}" wire:navigate
             class="md:hidden fixed bottom-24 right-5 w-14 h-14 rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center transition-transform active:scale-90 z-40 border-2 border-white
             {{ $filterType == 'goods' ? 'bg-blue-600 text-white' : 'bg-orange-600 text-white' }}">

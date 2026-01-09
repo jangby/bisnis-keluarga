@@ -53,4 +53,10 @@ class Debt extends Model
         return Carbon::now()->diffInDays($this->due_date, false); 
         // false = hasil bisa negatif jika sudah lewat
     }
+
+    // Tambahkan relasi ini
+public function employee()
+{
+    return $this->belongsTo(User::class, 'employee_id');
+}
 }

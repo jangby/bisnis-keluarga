@@ -182,62 +182,268 @@
         @endif
 
         {{-- ========================================================== --}}
-        {{-- 3. MENU DIVISI KHUSUS (Marketing & Produksi)               --}}
+        {{-- MENU DASHBOARD KHUSUS MARKETING (PENJUALAN)                --}}
         {{-- ========================================================== --}}
-
         @if(Auth::user()->role === 'marketing')
-            <div>
-                 <h3 class="font-bold text-gray-800 text-sm mb-3 px-1">Menu Marketing</h3>
-                 <div class="grid grid-cols-3 gap-4">
-                    {{-- Kasir --}}
-                    <a href="{{ route('pos.index') }}" wire:navigate class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-green-500 hover:shadow-md transition group">
-                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 group-hover:scale-110 transition">
-                             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <div class="space-y-6">
+                
+                {{-- 1. Statistik Omset & Order Hari Ini --}}
+                <div class="grid grid-cols-2 gap-4">
+                    {{-- Card Omset --}}
+                    <div class="col-span-2 sm:col-span-1 bg-gradient-to-r from-green-500 to-green-600 p-5 rounded-2xl shadow-lg shadow-green-500/30 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-xs text-green-100 font-bold uppercase tracking-wider mb-1">Omset Hari Ini</p>
+                            <h3 class="text-3xl font-extrabold tracking-tight">
+                                Rp {{ number_format($todayRevenue ?? 0, 0, ',', '.') }}
+                            </h3>
+                            <p class="text-[10px] text-green-100 mt-1 opacity-90">{{ \Carbon\Carbon::now()->format('d F Y') }}</p>
                         </div>
-                        <span class="font-bold text-xs text-gray-800">Kasir</span>
+                        {{-- Hiasan Background --}}
+                        <div class="absolute right-0 bottom-0 opacity-20 transform translate-x-4 translate-y-4">
+                            <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+
+                    {{-- Card Jumlah Order --}}
+                    <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500 uppercase">Order Selesai</span>
+                        </div>
+                        <span class="text-2xl font-black text-blue-700">{{ $todayOrdersCount ?? 0 }} <span class="text-sm font-medium text-blue-500">Transaksi</span></span>
+                    </div>
+
+                    {{-- Card Absensi Quick --}}
+                    <a href="{{ route('attendance.index') }}" class="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col justify-center hover:border-indigo-500 transition group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500 uppercase">Kehadiran</span>
+                        </div>
+                        <span class="text-sm font-bold text-indigo-700">Absen Sekarang &rarr;</span>
                     </a>
-                    {{-- Cek Stok --}}
-                    <a href="{{ route('products.index') }}" wire:navigate class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:shadow-md transition group">
-                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition">
-                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22v-9"/></svg>
+                </div>
+
+                {{-- 2. Menu Utama (Tombol Besar) --}}
+                <div>
+                    <h3 class="font-bold text-gray-800 text-sm mb-3 px-1">Menu Penjualan</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        {{-- Tombol Kasir --}}
+                        <a href="{{ route('pos.index') }}" class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md hover:border-green-500 transition group">
+                            <div class="h-14 w-14 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 group-hover:bg-green-600 group-hover:text-white transition">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">Buka Kasir (POS)</h4>
+                                <p class="text-xs text-gray-500">Input penjualan baru di sini</p>
+                            </div>
+                            <div class="ml-auto text-gray-300 group-hover:text-green-600 group-hover:translate-x-1 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </div>
+                        </a>
+
+                        {{-- Tombol Log Penjualan (Arah ke Log Barang/Item) --}}
+<a href="{{ route('orders.history') }}" wire:navigate class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md hover:border-blue-500 transition group">
+    <div class="h-14 w-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition">
+        {{-- Ikon List/Catatan --}}
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </div>
+    <div>
+        <h4 class="text-lg font-bold text-gray-800">Log Penjualan</h4>
+        <p class="text-xs text-gray-500">Lihat rincian barang terjual</p>
+    </div>
+    <div class="ml-auto text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </div>
+</a>
+                    </div>
+                </div>
+
+                {{-- 3. Log Penjualan Terakhir (Timeline) --}}
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="px-5 py-3 bg-gray-50 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-700 text-sm">Penjualan Terakhir Hari Ini</h3>
+                    </div>
+                    <div class="divide-y divide-gray-100">
+                        @forelse($recentOrders as $order)
+                            <div class="p-4 flex items-center gap-4 hover:bg-gray-50 transition">
+                                <div class="flex flex-col items-center min-w-[50px]">
+                                    <span class="text-sm font-bold text-gray-800">{{ $order->created_at->format('H:i') }}</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-gray-800 text-sm">Order #{{ $order->id }}</h4>
+                                    <p class="text-xs text-gray-500 truncate">Pelanggan: {{ $order->customer_name ?? 'Umum' }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block font-bold text-green-600 text-sm">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                                    <span class="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{{ $order->payment_method ?? 'Cash' }}</span>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="py-10 text-center text-gray-400">
+                                <p class="text-sm">Belum ada penjualan hari ini.</p>
+                                <a href="{{ route('pos.index') }}" class="text-xs text-green-600 font-bold hover:underline">Mulai Jualan &rarr;</a>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+            </div>
+        @endif
+
+
+        {{-- ========================================================== --}}
+        {{-- MENU DASHBOARD KHUSUS INVENTORY (GUDANG)                   --}}
+        {{-- ========================================================== --}}
+        @if(Auth::user()->role === 'inventory')
+            <div class="space-y-6">
+                
+                {{-- Statistik Stok --}}
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-purple-50 p-5 rounded-2xl border border-purple-100 flex flex-col justify-center">
+                        <span class="text-xs font-bold text-purple-600 uppercase">Total Bahan</span>
+                        <span class="text-3xl font-black text-purple-700 mt-1">{{ $totalMaterials ?? 0 }}</span>
+                    </div>
+                    <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex flex-col justify-center">
+                        <span class="text-xs font-bold text-blue-600 uppercase">Total Produk</span>
+                        <span class="text-3xl font-black text-blue-700 mt-1">{{ $totalProducts ?? 0 }}</span>
+                    </div>
+                </div>
+
+                {{-- Alert Stok Menipis --}}
+                @if(isset($lowStockItems) && count($lowStockItems) > 0)
+                    <div class="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+                        <div class="bg-red-50 px-4 py-3 border-b border-red-100 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <h3 class="text-sm font-bold text-red-700">Perhatian: Stok Menipis!</h3>
                         </div>
-                        <span class="font-bold text-xs text-gray-800">Cek Stok</span>
+                        <div class="divide-y divide-gray-100">
+                            @foreach($lowStockItems as $item)
+                                <div class="px-4 py-3 flex justify-between items-center hover:bg-gray-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
+                                            {{ substr($item->name, 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-800">{{ $item->name }}</p>
+                                            <p class="text-xs text-gray-400">Kode: {{ $item->code }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-md">
+                                        Sisa: {{ $item->current_stock }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Menu Aksi --}}
+                <h3 class="font-bold text-gray-800 text-sm px-1">Manajemen Gudang</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <a href="{{ route('products.index') }}" wire:navigate class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:border-purple-500 transition group">
+                        <div class="h-12 w-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22v-9"/></svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800 text-sm">Lihat Semua Stok</h4>
+                            <p class="text-xs text-gray-500">Cek jumlah, tambah, atau edit barang</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </a>
-                    {{-- Absensi (YANG HILANG) --}}
-                    <a href="{{ route('attendance.index') }}" wire:navigate class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-teal-500 hover:shadow-md transition group">
-                        <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 group-hover:scale-110 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+
+                    <a href="{{ route('attendance.index') }}" wire:navigate class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-4 hover:border-indigo-500 transition group">
+                        <div class="h-12 w-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
-                        <span class="font-bold text-xs text-gray-800">Absensi</span>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800 text-sm">Absensi</h4>
+                            <p class="text-xs text-gray-500">Catat kehadiran kerja</p>
+                        </div>
                     </a>
                 </div>
             </div>
         @endif
 
+        {{-- ========================================================== --}}
+        {{-- MENU DASHBOARD KHUSUS PRODUKSI (DESAIN BARU)               --}}
+        {{-- ========================================================== --}}
         @if(Auth::user()->role === 'production')
             <div>
-                 <h3 class="font-bold text-gray-800 text-sm mb-3 px-1">Menu Produksi</h3>
-                 <div class="grid grid-cols-3 gap-4">
-                    {{-- Input Produksi --}}
-                    <a href="{{ route('production.run') }}" wire:navigate class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-orange-500 hover:shadow-md transition group">
-                        <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-110 transition">
-                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+                {{-- 1. Statistik Ringkas & Alert Stok (Agar informatif) --}}
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-orange-50 p-3 rounded-2xl border border-orange-100 flex flex-col items-center justify-center text-center">
+                        <span class="text-xl font-black text-orange-600">{{ $totalMaterials ?? 0 }}</span>
+                        <span class="text-[10px] uppercase font-bold text-orange-400 mt-1">Bahan</span>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 flex flex-col items-center justify-center text-center">
+                        <span class="text-xl font-black text-blue-600">{{ $totalProducts ?? 0 }}</span>
+                        <span class="text-[10px] uppercase font-bold text-blue-400 mt-1">Produk</span>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded-2xl border border-red-100 flex flex-col items-center justify-center text-center">
+                        <span class="text-xl font-black text-red-600">{{ isset($lowStockItems) ? count($lowStockItems) : 0 }}</span>
+                        <span class="text-[10px] uppercase font-bold text-red-400 mt-1">Alert</span>
+                    </div>
+                </div>
+
+                {{-- 2. Tampilkan Detail Barang Stok Menipis (Jika Ada) --}}
+                @if(isset($lowStockItems) && count($lowStockItems) > 0)
+                    <div class="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden mb-6">
+                        <div class="bg-red-50 px-4 py-2 border-b border-red-100 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <h3 class="text-xs font-bold text-red-700">Perhatian: Stok Menipis!</h3>
                         </div>
-                        <span class="font-bold text-xs text-gray-800">Input Produksi</span>
+                        <div class="divide-y divide-gray-100">
+                            @foreach($lowStockItems as $item)
+                                <div class="px-4 py-2 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-gray-800">{{ $item->name }}</span>
+                                    <span class="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-md">Sisa: {{ $item->current_stock }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- 3. Menu Aksi Cepat (Tombol Besar) --}}
+                <h3 class="font-bold text-gray-800 text-sm mb-3 px-1">Menu Produksi</h3>
+                <div class="grid grid-cols-2 gap-3">
+                
+                    {{-- Input Produksi (Tombol Paling Besar & Menonjol) --}}
+                    <a href="{{ route('production.run') }}" wire:navigate class="col-span-2 bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl shadow-lg shadow-orange-500/30 text-white flex items-center justify-between group active:scale-[0.98] transition-all">
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold">Input Produksi</span>
+                            <span class="text-xs text-orange-100 opacity-90">Catat hasil produksi sekarang</span>
+                        </div>
+                        <div class="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        </div>
                     </a>
-                    {{-- Req Bahan --}}
-                    <a href="{{ route('production.request') }}" wire:navigate class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-red-500 hover:shadow-md transition group">
-                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 group-hover:scale-110 transition">
-                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/></svg>
-                        </div>
-                        <span class="font-bold text-xs text-gray-800">Req Bahan</span>
+
+                    {{-- Request Bahan --}}
+                    <a href="{{ route('production.request') }}" wire:navigate class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-2 hover:border-red-500 transition">
+                         <div class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/></svg>
+                         </div>
+                         <span class="font-bold text-xs text-gray-800">Req Bahan</span>
                     </a>
-                    {{-- Absensi (YANG HILANG) --}}
-                    <a href="{{ route('attendance.index') }}" wire:navigate class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-2 hover:border-teal-500 hover:shadow-md transition group">
-                        <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 group-hover:scale-110 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+
+                    {{-- Cek Stok --}}
+                    <a href="{{ route('products.index') }}" wire:navigate class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-2 hover:border-blue-500 transition">
+                         <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22v-9"/></svg>
+                         </div>
+                         <span class="font-bold text-xs text-gray-800">Cek Stok</span>
+                    </a>
+
+                    {{-- Absensi --}}
+                    <a href="{{ route('attendance.index') }}" wire:navigate class="col-span-2 bg-indigo-50 p-3 rounded-2xl border border-indigo-100 flex items-center gap-3 hover:bg-indigo-100 transition">
+                        <div class="h-8 w-8 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
-                        <span class="font-bold text-xs text-gray-800">Absensi</span>
+                        <span class="font-bold text-xs text-indigo-900">Absensi Kehadiran</span>
                     </a>
                 </div>
             </div>

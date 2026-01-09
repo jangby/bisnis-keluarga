@@ -9,6 +9,10 @@ use App\Models\FinanceRecord;
 use App\Models\InventoryLog;
 use App\Models\Contact;
 use App\Models\Debt;
+// --- TAMBAHAN IMPORT MODEL ORDER ---
+use App\Models\Order;
+use App\Models\OrderItem;
+// -----------------------------------
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +33,6 @@ class Pos extends Component
     public $search = '';
     public $category_id = 'all';
     
-    // [BARU] Opsi Cetak Struk
     public $print_receipt = true; 
 
     public function mount()
@@ -42,7 +45,6 @@ class Pos extends Component
         $product = Product::find($productId);
         if (!$product) return;
 
-        // Validasi stok (Opsional: jika ingin membolehkan stok minus, hapus blok ini)
         if ($product->current_stock <= 0) {
             $this->dispatch('show-toast', type: 'error', message: 'Stok Habis!');
             return;
@@ -65,6 +67,8 @@ class Pos extends Component
         }
 
         $this->calculateTotal();
+        // Feedback kecil saat sukses tambah (Opsional)
+        // $this->dispatch('show-toast', type: 'success', message: 'Produk ditambahkan'); 
     }
 
     public function removeFromCart($productId)
@@ -91,7 +95,7 @@ class Pos extends Component
         $this->category_id = $id;
     }
 
-    // Fungsi Checkout Utama
+    // --- FUNGSI CHECKOUT YANG SUDAH DIPERBAIKI ---
     public function checkout()
     {
         if (empty($this->cart)) return;
@@ -101,19 +105,20 @@ class Pos extends Component
             return;
         }
 
-        // 1. Simpan Data Struk SEMENTARA sebelum cart dihapus
+        // Tentukan Nama Pelanggan
+        $customerName = 'Pelanggan Umum';
+        if ($this->is_debt && $this->contact_id) {
+            $customerName = Contact::find($this->contact_id)->name;
+        }
+
+        // 1. Data Struk
         $receiptData = null;
         if ($this->print_receipt) {
-            $customerName = 'Umum';
-            if ($this->is_debt && $this->contact_id) {
-                $customerName = Contact::find($this->contact_id)->name;
-            }
-            
             $receiptData = [
                 'store_name' => config('app.name', 'BisnisKu'),
                 'date' => Carbon::now()->format('d/m/Y H:i'),
                 'cashier' => Auth::user()->name,
-                'items' => $this->cart, // Kirim array cart
+                'items' => $this->cart, 
                 'total' => $this->totalAmount,
                 'payment_type' => $this->is_debt ? 'KASBON' : 'TUNAI',
                 'customer' => $customerName,
@@ -122,27 +127,47 @@ class Pos extends Component
         }
 
         // 2. Proses Database
-        DB::transaction(function () {
+        DB::transaction(function () use ($customerName) {
+            
+            // --- A. SIMPAN KE TABEL ORDERS (Agar Masuk Log Penjualan) ---
+            $order = Order::create([
+                'user_id' => Auth::id(), // Kasir yang input
+                'guest_name' => $customerName,
+                'total_amount' => $this->totalAmount,
+                'status' => 'completed', // Langsung completed karena POS
+                'created_at' => Carbon::now(),
+            ]);
+
             $salesPerLine = [];
             $cogsPerLine = [];
 
             foreach ($this->cart as $item) {
                 $product = Product::find($item['id']);
                 
-                // Inventory Log
+                // --- B. SIMPAN DETAIL ITEM (Order Items) ---
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['id'],
+                    'product_name' => $item['name'], // Simpan nama saat ini
+                    'quantity' => $item['qty'],
+                    'price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['qty'],
+                ]);
+
+                // Inventory Log (Stok Keluar)
                 InventoryLog::create([
                     'product_id' => $item['id'],
                     'user_id' => Auth::id(),
                     'type' => 'sale_out',
                     'quantity' => -($item['qty']), 
                     'date' => Carbon::now(),
-                    'notes' => $this->is_debt ? 'Penjualan Kasbon' : 'Penjualan Kasir'
+                    'notes' => 'Penjualan #' . $order->id // Catat No Order di log stok
                 ]);
 
                 // Kurangi Stok
                 $product->decrement('current_stock', $item['qty']);
 
-                // Hitung Keuangan
+                // Hitung Keuangan (Grouping by Kategori)
                 if (!isset($salesPerLine[$item['line_id']])) {
                     $salesPerLine[$item['line_id']] = 0;
                     $cogsPerLine[$item['line_id']] = 0;
@@ -151,8 +176,9 @@ class Pos extends Component
                 $cogsPerLine[$item['line_id']] += ($product->base_price * $item['qty']);
             }
 
+            // --- C. URUS KEUANGAN & UTANG ---
             if ($this->is_debt) {
-                // UTANG
+                // Catat Utang
                 Debt::create([
                     'user_id' => Auth::id(),
                     'contact_id' => $this->contact_id,
@@ -161,9 +187,10 @@ class Pos extends Component
                     'remaining' => $this->totalAmount,
                     'status' => 'unpaid',
                     'due_date' => Carbon::now()->addDays(7),
-                    'notes' => 'Kasbon: ' . $this->notes
+                    'notes' => 'Kasbon Order #' . $order->id
                 ]);
-                // Expense HPP
+                
+                // Catat Expense HPP saja (Pemasukan belum diakui cash, tapi HPP sudah keluar)
                 foreach ($cogsPerLine as $lineId => $cogs) {
                      if ($cogs > 0) {
                         FinanceRecord::create([
@@ -174,12 +201,12 @@ class Pos extends Component
                             'amount' => $cogs,
                             'category' => 'HPP Penjualan (Kasbon)',
                             'transaction_date' => Carbon::now(),
-                            'notes' => 'Beban HPP Kasbon',
+                            'notes' => 'Beban HPP Order #' . $order->id,
                         ]);
                     }
                 }
             } else {
-                // TUNAI
+                // TUNAI (Catat Pemasukan & HPP)
                 foreach ($salesPerLine as $lineId => $total) {
                     FinanceRecord::create([
                         'user_id' => Auth::id(),
@@ -189,7 +216,7 @@ class Pos extends Component
                         'amount' => $total,
                         'category' => 'Penjualan',
                         'transaction_date' => Carbon::now(),
-                        'notes' => 'Penjualan Tunai',
+                        'notes' => 'Penjualan Order #' . $order->id,
                     ]);
 
                     if ($cogsPerLine[$lineId] > 0) {
@@ -201,41 +228,45 @@ class Pos extends Component
                             'amount' => $cogsPerLine[$lineId],
                             'category' => 'HPP Penjualan',
                             'transaction_date' => Carbon::now(),
-                            'notes' => 'HPP Tunai',
+                            'notes' => 'HPP Order #' . $order->id,
                         ]);
                     }
                 }
+                
+                // Tambah Saldo Dompet
                 if($this->wallet_id) {
                     Wallet::find($this->wallet_id)->increment('balance', $this->totalAmount);
                 }
             }
         });
 
-        // [OPSIONAL] Catat di Log Aktivitas (1 Baris Saja)
+        // Catat Log Aktivitas
         \App\Models\ActivityLog::create([
             'user_id' => Auth::id(),
             'action' => 'Transaksi',
             'subject_type' => 'POS',
             'subject_id' => null,
-            'description' => 'Melakukan transaksi penjualan senilai Rp ' . number_format($this->totalAmount, 0, ',', '.'),
+            'description' => 'Transaksi POS senilai Rp ' . number_format($this->totalAmount, 0, ',', '.'),
             'properties' => ['color' => 'bg-purple-100 text-purple-700', 'icon' => '🛒'],
             'ip_address' => request()->ip()
         ]);
 
-        // 3. Trigger Print (Jika dicentang) SEBELUM reset cart
+        // 3. Trigger Print Struk
         if ($this->print_receipt && $receiptData) {
             $this->dispatch('trigger-print-receipt', data: $receiptData);
         }
 
-        // 4. Reset
+        // 4. Reset & Notifikasi
         $this->cart = [];
         $this->totalAmount = 0;
         $this->is_debt = false;
         $this->notes = '';
         $this->contact_id = null;
         
-        $this->dispatch('close-modal'); // Tutup modal konfirmasi
-        session()->flash('message', 'Transaksi Berhasil!');
+        $this->dispatch('close-modal'); // Tutup modal checkout
+        
+        // PERBAIKAN NOTIFIKASI: Gunakan dispatch agar toast muncul
+        $this->dispatch('show-toast', type: 'success', message: 'Transaksi Berhasil Disimpan!'); 
     }
 
     public function render()

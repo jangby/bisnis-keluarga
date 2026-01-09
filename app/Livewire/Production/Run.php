@@ -8,14 +8,17 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Livewire\Attributes\Computed;
 
 class Run extends Component
 {
+    // Variabel Modal
+    public $showModal = false; // <--- INI KUNCINYA
+
+    // Variabel Form
     public $product_id;
     public $quantity_produced;
     public $date;
-
-    // Variabel bahan (Editable)
     public $materialsUsed = []; 
 
     public function mount()
@@ -23,8 +26,44 @@ class Run extends Component
         $this->date = Carbon::now()->format('Y-m-d');
     }
 
+    // Tombol "Tambah Produksi" ditekan
+    public function openModal()
+    {
+        $this->reset(['product_id', 'quantity_produced', 'materialsUsed']);
+        $this->date = Carbon::now()->format('Y-m-d'); // Reset tanggal ke hari ini
+        $this->showModal = true;
+    }
+
+    // Tombol "Batal" / "Tutup" ditekan
+    public function closeModal()
+    {
+        $this->showModal = false;
+    }
+
     public function updatedProductId() { $this->calculateMaterials(); }
     public function updatedQuantityProduced() { $this->calculateMaterials(); }
+
+    #[Computed]
+    public function todayLogs()
+    {
+        return InventoryLog::with('product')
+            ->where('type', 'production_in')
+            ->whereDate('date', $this->date) // Filter sesuai tanggal yg dipilih (atau hari ini)
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+    }
+
+    #[Computed]
+    public function todayStats()
+    {
+        $logs = $this->todayLogs();
+        return [
+            'total_pcs' => $logs->sum('quantity'),
+            'total_batch' => $logs->count(),
+            'products_count' => $logs->groupBy('product_id')->count()
+        ];
+    }
 
     public function calculateMaterials()
     {
@@ -33,18 +72,19 @@ class Run extends Component
         if ($this->product_id && $this->quantity_produced > 0) {
             $product = Product::with('recipes.material')->find($this->product_id);
             
-            foreach ($product->recipes as $recipe) {
-                $standardQty = $recipe->quantity_needed * $this->quantity_produced;
-
-                $this->materialsUsed[] = [
-                    'material_id' => $recipe->material_id,
-                    'name' => $recipe->material->name,
-                    'unit' => $recipe->material->unit,
-                    'current_stock' => $recipe->material->current_stock,
-                    'standard_qty' => $standardQty, 
-                    'actual_qty' => $standardQty,   
-                    'cost_per_unit' => $recipe->material->base_price 
-                ];
+            if ($product && $product->recipes) {
+                foreach ($product->recipes as $recipe) {
+                    $standardQty = $recipe->quantity_needed * $this->quantity_produced;
+                    $this->materialsUsed[] = [
+                        'material_id' => $recipe->material_id,
+                        'name' => $recipe->material->name ?? 'Unknown',
+                        'unit' => $recipe->material->unit ?? 'Satuan',
+                        'current_stock' => $recipe->material->current_stock ?? 0,
+                        'standard_qty' => $standardQty, 
+                        'actual_qty' => $standardQty,   
+                        'cost_per_unit' => $recipe->material->base_price ?? 0
+                    ];
+                }
             }
         }
     }
@@ -63,31 +103,27 @@ class Run extends Component
 
             // 1. Proses Bahan Baku
             foreach ($this->materialsUsed as $item) {
-                // Validasi Stok
                 if ($item['current_stock'] < $item['actual_qty']) {
-                    throw new \Exception("Stok " . $item['name'] . " kurang! Butuh: " . $item['actual_qty']);
+                    throw new \Exception("Stok " . $item['name'] . " kurang!");
                 }
-
                 $cost = $item['actual_qty'] * $item['cost_per_unit'];
                 $totalProductionCost += $cost;
 
-                // Update Stok Bahan (Quietly agar tidak spam log)
                 $material = Product::find($item['material_id']);
                 $material->current_stock -= $item['actual_qty'];
-                $material->saveQuietly(); // <--- PENTING: Silent update
+                $material->saveQuietly();
 
-                // Catat Log Gudang (Tetap ada untuk audit stok)
                 InventoryLog::create([
                     'product_id' => $item['material_id'],
                     'user_id' => Auth::id(),
-                    'type' => 'production_in', // Tipe: Masuk ke Produksi (Keluar dari Gudang)
+                    'type' => 'production_out',
                     'quantity' => -($item['actual_qty']), 
                     'date' => $this->date,
-                    'notes' => 'Dipakai Produksi: ' . $product->name
+                    'notes' => 'Bahan utk: ' . $product->name . ' (' . $this->quantity_produced . ')'
                 ]);
             }
 
-            // 2. Update Barang Jadi (HPP & Stok)
+            // 2. Update Barang Jadi
             $oldStockValue = $product->current_stock * $product->base_price;
             $totalNewStock = $product->current_stock + $this->quantity_produced;
             
@@ -97,24 +133,21 @@ class Run extends Component
             }
 
             $product->current_stock += $this->quantity_produced;
-            $product->saveQuietly(); // <--- PENTING: Silent update juga disini
+            $product->saveQuietly();
 
-            // 3. Catat Log Gudang untuk Barang Jadi
             InventoryLog::create([
                 'product_id' => $product->id,
                 'user_id' => Auth::id(),
-                'type' => 'production_in', // Hasil Produksi
+                'type' => 'production_in', 
                 'quantity' => $this->quantity_produced,
                 'date' => $this->date,
-                'notes' => 'Hasil Produksi (HPP Baru: Rp ' . number_format($product->base_price, 0) . ')'
+                'notes' => 'Hasil Produksi'
             ]);
 
-            // 4. [BARU] Catat SATU Log Aktivitas yang Jelas
             \App\Models\ActivityLog::create([
                 'user_id' => Auth::id(),
                 'action' => 'Produksi',
                 'subject_type' => 'Production',
-                'subject_id' => null,
                 'description' => "Memproduksi {$this->quantity_produced} {$product->unit} {$product->name}",
                 'properties' => ['color' => 'bg-orange-100 text-orange-700', 'icon' => '🏭'],
                 'ip_address' => request()->ip()
@@ -122,6 +155,8 @@ class Run extends Component
         });
 
         session()->flash('message', 'Produksi Berhasil Disimpan!');
+        
+        $this->showModal = false; // TUTUP MODAL SETELAH SAVE
         $this->reset(['product_id', 'quantity_produced', 'materialsUsed']);
     }
 

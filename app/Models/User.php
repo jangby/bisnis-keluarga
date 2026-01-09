@@ -46,4 +46,19 @@ public function leaveRequests()
 {
     return $this->hasMany(LeaveRequest::class);
 }
+
+// Tambahkan relasi ini
+public function debts()
+{
+    return $this->hasMany(Debt::class, 'employee_id');
+}
+
+// Helper untuk menghitung total sisa kasbon
+public function getCurrentDebtAttribute()
+{
+    return $this->debts()
+        ->where('type', 'receivable') // Piutang (Karyawan ngutang ke kita)
+        ->whereIn('status', ['unpaid', 'partial'])
+        ->sum('remaining');
+}
 }
